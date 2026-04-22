@@ -12,7 +12,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        sync: false          # Set manually in Render dashboard
+        sync: false          # Set manually in Render dashboard (Supabase pooler URL with ?pgbouncer=true)
+      - key: DIRECT_URL
+        sync: false          # Set manually in Render dashboard (Supabase direct connection URL)
       - key: JWT_SECRET
         generateValue: true  # Render auto-generates a secure random value
       - key: JWT_REFRESH_SECRET

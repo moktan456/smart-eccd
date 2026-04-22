@@ -1,9 +1,12 @@
 // SMART ECCD – Auth Context + Socket.io Initialization
 
-import { createContext, useContext, useEffect } from 'react';
+import { createContext, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import useAuthStore from '../store/authStore';
 import useNotificationStore from '../store/notificationStore';
+
+// In production, socket connects to the Render backend. In dev, use Vite proxy (same origin '/').
+const SOCKET_URL = import.meta.env.VITE_API_URL || '/';
 
 const AuthContext = createContext(null);
 
@@ -24,7 +27,7 @@ export const AuthProvider = ({ children }) => {
 
     fetchNotifications();
 
-    const socket = io('/', {
+    const socket = io(SOCKET_URL, {
       auth: { token: accessToken, centerId: user.centerId },
       reconnectionAttempts: 5,
     });
