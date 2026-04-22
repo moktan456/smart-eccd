@@ -41,7 +41,7 @@ const MgrActivityAssign = () => {
     }
   };
 
-  if (\!activity) return <LoadingSpinner className="mt-20" />;
+  if (!activity) return <LoadingSpinner className="mt-20" />;
 
   return (
     <div className="max-w-lg space-y-6">

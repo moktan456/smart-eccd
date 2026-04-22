@@ -33,7 +33,7 @@ const TeacherChildren = () => {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">My Children</h1>
       <Card><Table columns={columns} data={children} loading={loading} /></Card>
-      <Modal isOpen={\!\!selected} onClose={() => { setSelected(null); setBloomProfile(null); }} title={selected ? `${selected.firstName} ${selected.lastName}` : ''} size="lg">
+      <Modal isOpen={!!selected} onClose={() => { setSelected(null); setBloomProfile(null); }} title={selected ? `${selected.firstName} ${selected.lastName}` : ''} size="lg">
         {bloomProfile && <BloomRadarChart profile={bloomProfile} height={280} />}
       </Modal>
     </div>

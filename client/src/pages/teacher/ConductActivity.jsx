@@ -59,7 +59,7 @@ const ConductActivity = () => {
     }
   };
 
-  if (\!assignment) return <LoadingSpinner className="mt-20" />;
+  if (!assignment) return <LoadingSpinner className="mt-20" />;
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -92,7 +92,7 @@ const ConductActivity = () => {
       {/* Step 2: Performance */}
       {step === 2 && (
         <div className="space-y-4">
-          {children.filter(c => attendance[c.id] \!== 'ABSENT').map(child => (
+          {children.filter(c => attendance[c.id] !== 'ABSENT').map(child => (
             <Card key={child.id} title={`${child.firstName} ${child.lastName}`}>
               <div className="space-y-3">
                 <Select label="Completion" value={performances[child.id]?.completionStatus}

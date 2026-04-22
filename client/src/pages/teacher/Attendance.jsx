@@ -61,7 +61,7 @@ const TeacherAttendance = () => {
         </div>
         <div className="mt-4 flex items-center gap-3">
           <Button onClick={handleSave} loading={loading}>Save Attendance</Button>
-          {saved && <span className="text-sm text-green-600">✓ Saved\!</span>}
+          {saved && <span className="text-sm text-green-600">✓ Saved!</span>}
         </div>
       </Card>
     </div>

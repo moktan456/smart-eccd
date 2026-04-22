@@ -16,7 +16,7 @@ const Input = ({ label, error, helpText, className = '', required, ...props }) =
       {...props}
     />
     {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
-    {helpText && \!error && <p className="mt-1 text-xs text-gray-500">{helpText}</p>}
+    {helpText && !error && <p className="mt-1 text-xs text-gray-500">{helpText}</p>}
   </div>
 );
 

@@ -18,7 +18,7 @@ const SaUsers = () => {
 
   const toggle = async (id) => {
     await userService.toggleActivation(id);
-    setUsers(u => u.map(x => x.id === id ? {...x, isActive: \!x.isActive} : x));
+    setUsers(u => u.map(x => x.id === id ? {...x, isActive: !x.isActive} : x));
   };
 
   const columns = [

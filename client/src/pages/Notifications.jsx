@@ -28,13 +28,13 @@ const Notifications = () => {
         {notifications.length === 0 ? (
           <p className="text-gray-500 text-center py-8">No notifications.</p>
         ) : notifications.map(n => (
-          <div key={n.id} onClick={() => \!n.isRead && markRead(n.id)}
-            className={`p-4 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors ${\!n.isRead ? 'bg-blue-50/50' : ''}`}>
+          <div key={n.id} onClick={() => !n.isRead && markRead(n.id)}
+            className={`p-4 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors ${!n.isRead ? 'bg-blue-50/50' : ''}`}>
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${typeColor[n.type] || 'bg-gray-100 text-gray-700'}`}>{n.type?.replace(/_/g, ' ')}</span>
-                  {\!n.isRead && <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />}
+                  {!n.isRead && <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />}
                 </div>
                 <p className="text-sm font-medium text-gray-900">{n.title}</p>
                 <p className="text-sm text-gray-600">{n.message}</p>

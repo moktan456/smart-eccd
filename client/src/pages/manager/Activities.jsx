@@ -16,7 +16,7 @@ const MgrActivities = () => {
 
   const handleArchive = async (id) => {
     await activityService.archive(id);
-    setActivities(a => a.filter(x => x.id \!== id));
+    setActivities(a => a.filter(x => x.id !== id));
   };
 
   const columns = [

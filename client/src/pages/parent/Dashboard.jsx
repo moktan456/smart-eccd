@@ -23,7 +23,7 @@ const ParentDashboard = () => {
   }, []);
 
   useEffect(() => {
-    if (\!selectedChild) return;
+    if (!selectedChild) return;
     setLoading(true);
     Promise.all([
       dashboardService.getParentDashboard(selectedChild.id),

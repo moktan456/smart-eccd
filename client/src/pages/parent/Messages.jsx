@@ -35,7 +35,7 @@ const ParentMessages = () => {
         {loading ? <p>Loading...</p> : messages.length === 0 ? (
           <p className="text-gray-500 text-sm py-8 text-center">No messages yet.</p>
         ) : messages.map(m => (
-          <div key={m.id} className={`p-4 border-b border-gray-100 last:border-0 ${\!m.status || m.status === 'SENT' ? 'bg-blue-50' : ''}`}>
+          <div key={m.id} className={`p-4 border-b border-gray-100 last:border-0 ${!m.status || m.status === 'SENT' ? 'bg-blue-50' : ''}`}>
             <div className="flex justify-between items-start">
               <span className="text-sm font-medium">{m.sender?.name}</span>
               <span className="text-xs text-gray-400">{formatRelative(m.createdAt)}</span>

@@ -21,7 +21,7 @@ const MgrActivityNew = () => {
     setForm(f => ({
       ...f,
       bloomLevels: f.bloomLevels.includes(level)
-        ? f.bloomLevels.filter(l => l \!== level)
+        ? f.bloomLevels.filter(l => l !== level)
         : [...f.bloomLevels, level],
     }));
   };
@@ -92,7 +92,7 @@ const MgrActivityNew = () => {
               <div key={i} className="flex gap-2">
                 <Input className="flex-1" value={goal} onChange={e => handleGoalChange(i, e.target.value)} placeholder={`Goal ${i+1}`} />
                 {form.learningGoals.length > 1 && (
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setForm(f => ({...f, learningGoals: f.learningGoals.filter((_, j) => j \!== i)}))}>✕</Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setForm(f => ({...f, learningGoals: f.learningGoals.filter((_, j) => j !== i)}))}>✕</Button>
                 )}
               </div>
             ))}

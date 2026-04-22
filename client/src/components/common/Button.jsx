@@ -11,7 +11,7 @@ const sizes = { sm: 'px-3 py-1.5 text-xs', md: 'px-4 py-2 text-sm', lg: 'px-5 py
 
 const Button = ({ children, variant = 'primary', size = 'md', className = '', loading = false, icon: Icon, ...props }) => (
   <button
-    className={classNames(variants[variant], size \!== 'md' && sizes[size], className)}
+    className={classNames(variants[variant], size !== 'md' && sizes[size], className)}
     disabled={loading || props.disabled}
     {...props}
   >

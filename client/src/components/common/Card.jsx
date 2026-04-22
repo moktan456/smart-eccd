@@ -19,7 +19,7 @@ export const StatCard = ({ label, value, icon: Icon, color = 'bg-primary-50 text
     <div>
       <p className="text-sm text-gray-500">{label}</p>
       <p className="text-2xl font-bold text-gray-900">{value ?? '—'}</p>
-      {change \!== undefined && <p className={`text-xs ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>{change >= 0 ? '▲' : '▼'} {Math.abs(change)}%</p>}
+      {change !== undefined && <p className={`text-xs ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>{change >= 0 ? '▲' : '▼'} {Math.abs(change)}%</p>}
     </div>
   </div>
 );

@@ -23,7 +23,7 @@ const TeacherActivities = () => {
     { key: 'scheduledDate', label: 'Date', render: r => formatDate(r.scheduledDate) },
     { key: 'bloomLevels', label: "Bloom's", render: r => <div className="flex flex-wrap gap-1">{r.activity?.bloomLevels?.map(l => <BloomBadge key={l} level={l} />)}</div> },
     { key: 'status', label: 'Status', render: r => <Badge color={statusColor[r.status]}>{r.status}</Badge> },
-    { key: 'actions', label: '', render: r => r.status \!== 'COMPLETED' && <Link to={`/teacher/activities/${r.id}/conduct`}><Button size="sm">Conduct</Button></Link> },
+    { key: 'actions', label: '', render: r => r.status !== 'COMPLETED' && <Link to={`/teacher/activities/${r.id}/conduct`}><Button size="sm">Conduct</Button></Link> },
   ];
 
   return (
