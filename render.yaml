@@ -35,3 +35,5 @@ services:
         value: "false"
       - key: ENCRYPTION_KEY
         generateValue: true
+      - key: PUPPETEER_SKIP_DOWNLOAD
+        value: "true"       # Skip Chromium download — PDF reports use lazy require anyway
