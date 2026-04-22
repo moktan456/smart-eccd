@@ -5,6 +5,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 const path = require('path');
 
 const routes = require('./routes');
@@ -46,6 +47,9 @@ const globalLimiter = rateLimit({
   legacyHeaders: false,
 });
 app.use(globalLimiter);
+
+// ── Cookie Parsing ──────────────────────────────────────────
+app.use(cookieParser());
 
 // ── Body Parsing ────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));

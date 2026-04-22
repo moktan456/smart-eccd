@@ -69,8 +69,8 @@ const login = async (req, res, next) => {
     // Set refresh token as httpOnly cookie
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: true,                                       // required for sameSite: 'none'
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',  // 'none' for cross-origin (Vercel→Render)
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -142,8 +142,8 @@ const refresh = async (req, res, next) => {
 
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: true,                                       // required for sameSite: 'none'
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',  // 'none' for cross-origin (Vercel→Render)
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
