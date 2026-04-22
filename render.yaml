@@ -1,0 +1,35 @@
+# SMART ECCD – Render Deployment Configuration
+# Render reads this file automatically when you connect the repo
+
+services:
+  - type: web
+    name: smart-eccd-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false          # Set manually in Render dashboard
+      - key: JWT_SECRET
+        generateValue: true  # Render auto-generates a secure random value
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: CLIENT_URL
+        sync: false          # Set to your Vercel URL after deploying frontend
+      - key: UPLOAD_PROVIDER
+        value: local
+      - key: ENABLE_REAL_TIME
+        value: "true"
+      - key: ENABLE_EMAIL_NOTIFICATIONS
+        value: "false"
+      - key: ENABLE_PDF_REPORTS
+        value: "false"
+      - key: ENCRYPTION_KEY
+        generateValue: true
