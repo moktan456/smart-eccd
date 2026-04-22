@@ -1,0 +1,356 @@
+// SMART ECCD – Prisma Schema
+// PostgreSQL database for Child Care Center Management Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  CENTER_MANAGER
+  TEACHER
+  PARENT
+}
+
+enum BloomLevel {
+  REMEMBER
+  UNDERSTAND
+  APPLY
+  ANALYZE
+  EVALUATE
+  CREATE
+}
+
+enum ActivityStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AssignmentStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+}
+
+enum CompletionStatus {
+  COMPLETED
+  PARTIAL
+  NOT_ATTEMPTED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+enum NotificationType {
+  ACTIVITY_ASSIGNED
+  PERFORMANCE_RECORDED
+  ATTENDANCE_MARKED
+  MESSAGE_RECEIVED
+  ANNOUNCEMENT
+  FLAG_RAISED
+  REPORT_READY
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
+// ─────────────────────────────────────────────────────────────
+// CORE MODELS
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  centerId     String?
+  avatar       String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  center         Center?       @relation("CenterUsers", fields: [centerId], references: [id])
+  managedCenter  Center?       @relation("CenterManager")
+  teacherClasses Class[]       @relation("ClassTeacher")
+  childParents   ChildParent[]
+  sentMessages   Message[]     @relation("MessageSender")
+  receivedMessages Message[]   @relation("MessageReceiver")
+  notifications  Notification[]
+  refreshTokens  RefreshToken[]
+  createdActivities Activity[] @relation("ActivityCreator")
+
+  @@index([email])
+  @@index([centerId])
+  @@index([role])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model Center {
+  id        String   @id @default(cuid())
+  name      String
+  address   String
+  phone     String?
+  email     String?
+  logo      String?
+  managerId String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  manager    User       @relation("CenterManager", fields: [managerId], references: [id])
+  users      User[]     @relation("CenterUsers")
+  classes    Class[]
+  activities Activity[]
+  children   Child[]
+
+  @@index([managerId])
+}
+
+model Class {
+  id        String   @id @default(cuid())
+  name      String
+  ageGroup  String   // e.g. '3-4 years'
+  centerId  String
+  teacherId String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  center      Center               @relation(fields: [centerId], references: [id])
+  teacher     User                 @relation("ClassTeacher", fields: [teacherId], references: [id])
+  children    Child[]
+  assignments ActivityAssignment[]
+
+  @@index([centerId])
+  @@index([teacherId])
+}
+
+model Child {
+  id              String   @id @default(cuid())
+  firstName       String
+  lastName        String
+  dateOfBirth     DateTime
+  photo           String?
+  classId         String
+  centerId        String
+  medicalNotesEnc String?  // Encrypted at rest
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  class       Class             @relation(fields: [classId], references: [id])
+  center      Center            @relation(fields: [centerId], references: [id])
+  parents     ChildParent[]
+  performance ChildPerformance[]
+  attendance  Attendance[]
+
+  @@index([classId])
+  @@index([centerId])
+}
+
+model ChildParent {
+  childId  String
+  parentId String
+  isPrimary Boolean @default(false)
+
+  child  Child @relation(fields: [childId], references: [id], onDelete: Cascade)
+  parent User  @relation(fields: [parentId], references: [id])
+
+  @@id([childId, parentId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// ACTIVITY MODELS
+// ─────────────────────────────────────────────────────────────
+
+model Activity {
+  id             String         @id @default(cuid())
+  title          String
+  description    String
+  instructions   String
+  bloomLevels    BloomLevel[]
+  activityType   String         // Individual | Group | Outdoor | Creative
+  ageGroup       String
+  durationMins   Int
+  resources      String[]       // File URLs
+  learningGoals  String[]
+  status         ActivityStatus @default(DRAFT)
+  centerId       String
+  createdById    String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  center      Center               @relation(fields: [centerId], references: [id])
+  createdBy   User                 @relation("ActivityCreator", fields: [createdById], references: [id])
+  assignments ActivityAssignment[]
+
+  @@index([centerId])
+  @@index([status])
+}
+
+model ActivityAssignment {
+  id            String           @id @default(cuid())
+  activityId    String
+  classId       String
+  teacherId     String
+  scheduledDate DateTime
+  scheduledTime String
+  isRecurring   Boolean          @default(false)
+  recurringRule String?          // RRULE string
+  status        AssignmentStatus @default(PENDING)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  activity Activity       @relation(fields: [activityId], references: [id])
+  class    Class          @relation(fields: [classId], references: [id])
+  record   ActivityRecord?
+
+  @@index([activityId])
+  @@index([classId])
+  @@index([teacherId])
+  @@index([scheduledDate])
+}
+
+model ActivityRecord {
+  id            String   @id @default(cuid())
+  assignmentId  String   @unique
+  conductedDate DateTime
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  assignment   ActivityAssignment @relation(fields: [assignmentId], references: [id])
+  performances ChildPerformance[]
+  attendances  Attendance[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// PERFORMANCE & ATTENDANCE MODELS
+// ─────────────────────────────────────────────────────────────
+
+model ChildPerformance {
+  id                 String           @id @default(cuid())
+  recordId           String
+  childId            String
+  completionStatus   CompletionStatus
+  bloomLevelAchieved BloomLevel
+  skillRatings       Json             // { "goal": rating 1-5 }
+  observationNotes   String?
+  evidenceUrls       String[]
+  isFlagged          Boolean          @default(false)
+  flagReason         String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  record ActivityRecord @relation(fields: [recordId], references: [id])
+  child  Child         @relation(fields: [childId], references: [id])
+
+  @@index([childId])
+  @@index([recordId])
+  @@index([bloomLevelAchieved])
+}
+
+model Attendance {
+  id        String           @id @default(cuid())
+  childId   String
+  recordId  String?
+  date      DateTime
+  status    AttendanceStatus
+  note      String?
+  createdAt DateTime         @default(now())
+
+  child  Child          @relation(fields: [childId], references: [id])
+  record ActivityRecord? @relation(fields: [recordId], references: [id])
+
+  @@unique([childId, date])
+  @@index([childId])
+  @@index([date])
+}
+
+// ─────────────────────────────────────────────────────────────
+// MESSAGING & NOTIFICATIONS
+// ─────────────────────────────────────────────────────────────
+
+model Message {
+  id         String        @id @default(cuid())
+  senderId   String
+  receiverId String
+  subject    String?
+  body       String
+  status     MessageStatus @default(SENT)
+  createdAt  DateTime      @default(now())
+
+  sender   User @relation("MessageSender", fields: [senderId], references: [id])
+  receiver User @relation("MessageReceiver", fields: [receiverId], references: [id])
+
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  centerId  String
+  title     String
+  body      String
+  createdBy String
+  createdAt DateTime @default(now())
+
+  @@index([centerId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?            // Extra payload (e.g., childId, activityId)
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+}
