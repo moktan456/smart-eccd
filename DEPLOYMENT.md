@@ -15,18 +15,38 @@ git push origin main
 
 ## Step 2 — Set up Supabase (Free PostgreSQL Database)
 
+> ⚠️ **IPv4 Fix:** Render's free tier is IPv4-only. Supabase's direct connection is IPv6.
+> You must use the **Connection Pooler** URL for Render, and keep the direct URL only for migrations.
+> The schema is already configured for this — just copy the right URLs below.
+
 1. Go to **https://supabase.com** → Sign Up (free, no credit card)
 2. Click **New Project**
    - Name: `smart-eccd`
-   - Database Password: choose a strong password and **save it**
+   - Database Password: choose a strong password and **save it somewhere safe**
    - Region: pick the closest to you
 3. Wait ~2 minutes for the project to provision
-4. Go to **Settings → Database → Connection string → URI**
-5. Copy the URI — it looks like:
-   ```
-   postgresql://postgres:[YOUR-PASSWORD]@db.xxxx.supabase.co:5432/postgres
-   ```
-6. **Save this URL** — you'll need it in Step 3
+4. Go to **Settings → Database**
+
+**Get URL A — Connection Pooler (for Render `DATABASE_URL`):**
+- Scroll to **"Connection pooling"** section
+- Mode: **Transaction**
+- Copy the URI — it looks like:
+  ```
+  postgresql://postgres.xxxx:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
+  ```
+- Append `?pgbouncer=true` to the end:
+  ```
+  postgresql://postgres.xxxx:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+  ```
+- **Save as DATABASE_URL**
+
+**Get URL B — Direct Connection (for Render `DIRECT_URL`):**
+- Scroll up to **"Connection string"** → **URI** tab
+- Copy the URI — it looks like:
+  ```
+  postgresql://postgres:[YOUR-PASSWORD]@db.xxxx.supabase.co:5432/postgres
+  ```
+- **Save as DIRECT_URL**
 
 ---
 
@@ -47,16 +67,17 @@ git push origin main
    | Key | Value |
    |-----|-------|
    | `NODE_ENV` | `production` |
-   | `DATABASE_URL` | *(paste your Supabase URI from Step 2)* |
-   | `JWT_SECRET` | *(click Generate — any random string)* |
-   | `JWT_REFRESH_SECRET` | *(click Generate — any random string)* |
+   | `DATABASE_URL` | *(paste **URL A** — the pooler URL with `?pgbouncer=true`)* |
+   | `DIRECT_URL` | *(paste **URL B** — the direct connection URL)* |
+   | `JWT_SECRET` | *(click Generate — Render fills a random value)* |
+   | `JWT_REFRESH_SECRET` | *(click Generate — Render fills a random value)* |
    | `JWT_EXPIRES_IN` | `15m` |
    | `JWT_REFRESH_EXPIRES_IN` | `7d` |
    | `UPLOAD_PROVIDER` | `local` |
    | `ENABLE_REAL_TIME` | `true` |
    | `ENABLE_EMAIL_NOTIFICATIONS` | `false` |
    | `ENABLE_PDF_REPORTS` | `false` |
-   | `ENCRYPTION_KEY` | *(any 64-character hex string)* |
+   | `ENCRYPTION_KEY` | *(click Generate — Render fills a random value)* |
    | `CLIENT_URL` | *(leave blank for now — fill after Step 4)* |
 
 6. Click **Create Web Service** — Render will build and deploy (~3 min)

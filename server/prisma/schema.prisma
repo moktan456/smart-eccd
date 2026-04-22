@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")    // Pooler URL  (IPv4, used by the running app)
+  directUrl = env("DIRECT_URL")      // Direct URL  (IPv6, used only for migrations)
 }
 
 // ─────────────────────────────────────────────────────────────
