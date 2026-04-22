@@ -7,8 +7,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")    // Pooler URL  (IPv4, used by the running app)
-  directUrl = env("DIRECT_URL")      // Direct URL  (IPv6, used only for migrations)
+  url       = env("DATABASE_URL")    // Pooler Transaction mode – port 6543 + ?pgbouncer=true  (runtime queries)
+  directUrl = env("DIRECT_URL")      // Pooler Session mode    – port 5432, no suffix           (migrations only)
 }
 
 // ─────────────────────────────────────────────────────────────

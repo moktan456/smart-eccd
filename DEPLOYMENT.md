@@ -40,13 +40,21 @@ git push origin main
   ```
 - **Save as DATABASE_URL**
 
-**Get URL B — Direct Connection (for Render `DIRECT_URL`):**
-- Scroll up to **"Connection string"** → **URI** tab
-- Copy the URI — it looks like:
+**Get URL B — Session Mode Pooler (for Render `DIRECT_URL`):**
+- Stay in the **"Connection pooling"** section
+- Change Mode to **Session**
+- Copy the URI — it looks like (same host as URL A, but port **5432**):
   ```
-  postgresql://postgres:[YOUR-PASSWORD]@db.xxxx.supabase.co:5432/postgres
+  postgresql://postgres.xxxx:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres
   ```
+- Do NOT append `?pgbouncer=true`
 - **Save as DIRECT_URL**
+
+> ⚠️ **Do NOT use the direct connection string** (`db.xxxx.supabase.co:5432`) for DIRECT_URL.
+> Supabase's direct host is IPv6-only. Render's free tier is IPv4-only.
+> Both URLs must go through the pooler host (`aws-0-xx.pooler.supabase.com`).
+> - `DATABASE_URL` = pooler port **6543** (Transaction mode) + `?pgbouncer=true`
+> - `DIRECT_URL` = pooler port **5432** (Session mode), no suffix
 
 ---
 
