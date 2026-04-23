@@ -23,13 +23,13 @@ echo ""
 
 # ── 1. System packages ────────────────────────────────────────
 log "Updating system packages..."
-sudo apt-get update -qq
+sudo apt-get update
 
 # ── 2. Node.js 20 ─────────────────────────────────────────────
 if ! command -v node &>/dev/null || [[ $(node -v | cut -d'v' -f2 | cut -d'.' -f1) -lt 20 ]]; then
   log "Installing Node.js 20..."
-  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - -qq
-  sudo apt-get install -y nodejs -qq
+  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+  sudo apt-get install -y nodejs
 else
   log "Node.js $(node -v) already installed"
 fi
@@ -37,7 +37,7 @@ fi
 # ── 3. PostgreSQL ─────────────────────────────────────────────
 if ! command -v psql &>/dev/null; then
   log "Installing PostgreSQL..."
-  sudo apt-get install -y postgresql postgresql-contrib -qq
+  sudo apt-get install -y postgresql postgresql-contrib
   sudo systemctl enable postgresql
   sudo systemctl start postgresql
 else
@@ -82,7 +82,7 @@ EOF
 # ── 7. Install server dependencies ────────────────────────────
 log "Installing backend dependencies..."
 cd "${REPO_DIR}/server"
-PUPPETEER_SKIP_DOWNLOAD=true npm install --omit=dev --silent
+PUPPETEER_SKIP_DOWNLOAD=true npm install --omit=dev
 
 # ── 8. Generate Prisma client + run migrations + seed ─────────
 log "Running database migrations..."
@@ -94,7 +94,7 @@ node prisma/seed.js
 # ── 9. Build React frontend ───────────────────────────────────
 log "Installing frontend dependencies..."
 cd "${REPO_DIR}/client"
-npm install --silent
+npm install
 
 log "Building React frontend..."
 npm run build
