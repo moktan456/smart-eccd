@@ -78,10 +78,20 @@ app.get('/health', (req, res) => {
 // ── API Routes ───────────────────────────────────────────────
 app.use('/api', routes);
 
-// ── 404 ─────────────────────────────────────────────────────
-app.use((req, res) => {
-  res.status(404).json({ success: false, message: `Route ${req.originalUrl} not found` });
-});
+// ── Serve React Frontend (production / local server mode) ────
+const clientDist = path.join(__dirname, '../../client/dist');
+if (require('fs').existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  // SPA fallback — let React Router handle all non-API routes
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+} else {
+  // ── 404 (dev mode — frontend runs separately on Vite) ─────
+  app.use((req, res) => {
+    res.status(404).json({ success: false, message: `Route ${req.originalUrl} not found` });
+  });
+}
 
 // ── Global Error Handler ────────────────────────────────────
 app.use(errorHandler);
