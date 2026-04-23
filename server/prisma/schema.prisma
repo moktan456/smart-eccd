@@ -6,9 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")    // Pooler Transaction mode – port 6543 + ?pgbouncer=true  (runtime queries)
-  directUrl = env("DIRECT_URL")      // Pooler Session mode    – port 5432, no suffix           (migrations only)
+  provider = "postgresql"
+  url      = env("DATABASE_URL")   // Neon connection string – works for both queries and migrations
 }
 
 // ─────────────────────────────────────────────────────────────
