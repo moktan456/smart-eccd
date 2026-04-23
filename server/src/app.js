@@ -20,17 +20,24 @@ app.use(helmet());
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  process.env.CLIENT_URL,           // e.g. https://smart-eccd.vercel.app
-  process.env.CLIENT_URL_PREVIEW,   // optional preview URL
+  process.env.CLIENT_URL,
+  process.env.CLIENT_URL_PREVIEW,
 ].filter(Boolean);
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;                                      // Postman / curl / server-to-server
+  if (allowedOrigins.includes(origin)) return true;             // Exact match (CLIENT_URL)
+  if (/\.vercel\.app$/.test(origin)) return true;               // Any Vercel preview deployment
+  if (/^http:\/\/localhost(:\d+)?$/.test(origin)) return true;  // Any localhost port
+  return false;
+};
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps, Postman, curl)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      callback(new Error(`CORS: origin ${origin} not allowed`));
+      if (isAllowedOrigin(origin)) return callback(null, true);
+      // Return false (not an Error) so CORS headers ARE sent with the rejection
+      return callback(null, false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
