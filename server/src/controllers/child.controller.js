@@ -98,6 +98,24 @@ const getChildById = async (req, res, next) => {
 /**
  * POST /api/children – CM | SA
  */
+const generateStudentId = async (centerId) => {
+  const year = new Date().getFullYear();
+  const prefix = `STU-${year}-`;
+  // Count existing students for this center this year to get the next sequence
+  const count = await prisma.child.count({
+    where: {
+      centerId,
+      studentId: { startsWith: prefix },
+    },
+  });
+  const seq = String(count + 1).padStart(4, '0');
+  const candidate = `${prefix}${seq}`;
+  // Ensure uniqueness (race-condition safety)
+  const existing = await prisma.child.findUnique({ where: { studentId: candidate } });
+  if (existing) return `${prefix}${String(count + 2).padStart(4, '0')}`;
+  return candidate;
+};
+
 const createChild = async (req, res, next) => {
   try {
     const { parentIds, medicalNotes, ...data } = childSchema.parse(req.body);
@@ -105,6 +123,9 @@ const createChild = async (req, res, next) => {
 
     const childData = { ...data };
     if (medicalNotes) childData.medicalNotesEnc = encrypt(medicalNotes);
+
+    // Auto-generate a unique studentId
+    childData.studentId = await generateStudentId(childData.centerId);
 
     const child = await prisma.child.create({
       data: {
