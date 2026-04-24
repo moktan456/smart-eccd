@@ -48,8 +48,15 @@ CREATE INDEX IF NOT EXISTS "Classroom_centerId_idx" ON "Classroom"("centerId");
 
 -- ── Class: add classroomId ────────────────────────────────────
 ALTER TABLE "Class" ADD COLUMN IF NOT EXISTS "classroomId" TEXT;
-ALTER TABLE "Class" ADD CONSTRAINT IF NOT EXISTS "Class_classroomId_fkey"
-    FOREIGN KEY ("classroomId") REFERENCES "Classroom"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'Class_classroomId_fkey'
+  ) THEN
+    ALTER TABLE "Class" ADD CONSTRAINT "Class_classroomId_fkey"
+      FOREIGN KEY ("classroomId") REFERENCES "Classroom"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END $$;
 
 -- ── ActivityAssignment: add teacher FK relation ───────────────
 -- teacherId already exists as column; add FK constraint if missing
