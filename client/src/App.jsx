@@ -9,21 +9,27 @@ import MainLayout from './components/layout/MainLayout';
 
 // ── Lazy-loaded pages ──────────────────────────────────────────
 const Login          = lazy(() => import('./pages/auth/Login'));
+const Register       = lazy(() => import('./pages/auth/Register'));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
 
 // Super Admin
-const SaDashboard = lazy(() => import('./pages/superadmin/Dashboard'));
-const SaCenters   = lazy(() => import('./pages/superadmin/Centers'));
-const SaUsers     = lazy(() => import('./pages/superadmin/Users'));
+const SaDashboard    = lazy(() => import('./pages/superadmin/Dashboard'));
+const SaCenters      = lazy(() => import('./pages/superadmin/Centers'));
+const SaUsers        = lazy(() => import('./pages/superadmin/Users'));
+const SaSettings     = lazy(() => import('./pages/superadmin/CenterSettings'));
 
 // Manager
-const MgrDashboard    = lazy(() => import('./pages/manager/Dashboard'));
-const MgrClasses      = lazy(() => import('./pages/manager/Classes'));
-const MgrChildren     = lazy(() => import('./pages/manager/Children'));
-const MgrActivities   = lazy(() => import('./pages/manager/Activities'));
-const MgrActivityNew  = lazy(() => import('./pages/manager/ActivityNew'));
+const MgrDashboard      = lazy(() => import('./pages/manager/Dashboard'));
+const MgrClasses        = lazy(() => import('./pages/manager/Classes'));
+const MgrChildren       = lazy(() => import('./pages/manager/Children'));
+const MgrActivities     = lazy(() => import('./pages/manager/Activities'));
+const MgrActivityNew    = lazy(() => import('./pages/manager/ActivityNew'));
 const MgrActivityAssign = lazy(() => import('./pages/manager/ActivityAssign'));
-const MgrReports      = lazy(() => import('./pages/manager/Reports'));
+const MgrReports        = lazy(() => import('./pages/manager/Reports'));
+const MgrClassrooms     = lazy(() => import('./pages/manager/Classrooms'));
+const MgrCalendar       = lazy(() => import('./pages/manager/Calendar'));
+const MgrFees           = lazy(() => import('./pages/manager/FeeManagement'));
+const MgrLeaveReview    = lazy(() => import('./pages/manager/LeaveReview'));
 
 // Teacher
 const TeacherDashboard  = lazy(() => import('./pages/teacher/Dashboard'));
@@ -37,6 +43,7 @@ const ParentDashboard   = lazy(() => import('./pages/parent/Dashboard'));
 const ParentPerformance = lazy(() => import('./pages/parent/ChildPerformance'));
 const ParentAttendance  = lazy(() => import('./pages/parent/ChildAttendance'));
 const ParentMessages    = lazy(() => import('./pages/parent/Messages'));
+const ParentLeave       = lazy(() => import('./pages/parent/LeaveRequest'));
 
 // Shared
 const Notifications = lazy(() => import('./pages/Notifications'));
@@ -71,7 +78,8 @@ const App = () => (
       <Suspense fallback={<FullPageSpinner />}>
         <Routes>
           {/* Public */}
-          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/login"           element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/register"        element={<PublicRoute><Register /></PublicRoute>} />
           <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
 
           {/* Protected – Shared Layout */}
@@ -81,6 +89,7 @@ const App = () => (
             <Route path="/sa/dashboard" element={<ProtectedRoute roles={['SUPER_ADMIN']}><SaDashboard /></ProtectedRoute>} />
             <Route path="/sa/centers"   element={<ProtectedRoute roles={['SUPER_ADMIN']}><SaCenters /></ProtectedRoute>} />
             <Route path="/sa/users"     element={<ProtectedRoute roles={['SUPER_ADMIN']}><SaUsers /></ProtectedRoute>} />
+            <Route path="/sa/settings"  element={<ProtectedRoute roles={['SUPER_ADMIN']}><SaSettings /></ProtectedRoute>} />
 
             {/* Center Manager */}
             <Route path="/manager/dashboard"              element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrDashboard /></ProtectedRoute>} />
@@ -90,6 +99,10 @@ const App = () => (
             <Route path="/manager/activities/new"         element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrActivityNew /></ProtectedRoute>} />
             <Route path="/manager/activities/:id/assign"  element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrActivityAssign /></ProtectedRoute>} />
             <Route path="/manager/reports"                element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrReports /></ProtectedRoute>} />
+            <Route path="/manager/classrooms"             element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrClassrooms /></ProtectedRoute>} />
+            <Route path="/manager/calendar"               element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrCalendar /></ProtectedRoute>} />
+            <Route path="/manager/fees"                   element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrFees /></ProtectedRoute>} />
+            <Route path="/manager/leave"                  element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrLeaveReview /></ProtectedRoute>} />
 
             {/* Teacher */}
             <Route path="/teacher/dashboard"              element={<ProtectedRoute roles={['TEACHER']}><TeacherDashboard /></ProtectedRoute>} />
@@ -99,10 +112,12 @@ const App = () => (
             <Route path="/teacher/attendance"             element={<ProtectedRoute roles={['TEACHER']}><TeacherAttendance /></ProtectedRoute>} />
 
             {/* Parent */}
-            <Route path="/parent/dashboard"                          element={<ProtectedRoute roles={['PARENT']}><ParentDashboard /></ProtectedRoute>} />
-            <Route path="/parent/child/:id/performance"              element={<ProtectedRoute roles={['PARENT']}><ParentPerformance /></ProtectedRoute>} />
-            <Route path="/parent/child/:id/attendance"               element={<ProtectedRoute roles={['PARENT']}><ParentAttendance /></ProtectedRoute>} />
-            <Route path="/parent/messages"                           element={<ProtectedRoute roles={['PARENT']}><ParentMessages /></ProtectedRoute>} />
+            <Route path="/parent/dashboard"                     element={<ProtectedRoute roles={['PARENT']}><ParentDashboard /></ProtectedRoute>} />
+            <Route path="/parent/child/:id/performance"         element={<ProtectedRoute roles={['PARENT']}><ParentPerformance /></ProtectedRoute>} />
+            <Route path="/parent/child/:id/attendance"          element={<ProtectedRoute roles={['PARENT']}><ParentAttendance /></ProtectedRoute>} />
+            <Route path="/parent/messages"                      element={<ProtectedRoute roles={['PARENT']}><ParentMessages /></ProtectedRoute>} />
+            <Route path="/parent/leave"                         element={<ProtectedRoute roles={['PARENT']}><ParentLeave /></ProtectedRoute>} />
+            <Route path="/parent/leave/new"                     element={<ProtectedRoute roles={['PARENT']}><ParentLeave /></ProtectedRoute>} />
 
             {/* Shared */}
             <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />

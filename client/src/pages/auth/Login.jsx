@@ -65,10 +65,16 @@ const Login = () => {
           </Button>
         </form>
 
-        <div className="mt-4 text-center">
-          <Link to="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700">
+        <div className="mt-4 text-center space-y-2">
+          <Link to="/forgot-password" className="block text-sm text-primary-600 hover:text-primary-700">
             Forgot your password?
           </Link>
+          <p className="text-sm text-gray-500">
+            Parent?{' '}
+            <Link to="/register" className="text-primary-600 font-medium hover:underline">
+              Register with your child's Student ID →
+            </Link>
+          </p>
         </div>
 
         {/* Demo credentials hint */}

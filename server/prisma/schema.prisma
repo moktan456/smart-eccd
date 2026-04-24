@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")   // Neon connection string – works for both queries and migrations
+  url      = env("DATABASE_URL")
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -64,12 +64,45 @@ enum NotificationType {
   ANNOUNCEMENT
   FLAG_RAISED
   REPORT_READY
+  FEE_REMINDER
+  LEAVE_APPROVED
+  LEAVE_REJECTED
 }
 
 enum MessageStatus {
   SENT
   DELIVERED
   READ
+}
+
+enum FeeStatus {
+  PENDING
+  PAID
+  PARTIAL
+  OVERDUE
+  WAIVED
+}
+
+enum FeeFrequency {
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+  ONE_TIME
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum EventType {
+  HOLIDAY
+  EXAM
+  FUNCTION
+  MEETING
+  ACTIVITY
+  OTHER
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -84,20 +117,24 @@ model User {
   role         Role
   centerId     String?
   avatar       String?
+  phone        String?
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   // Relations
-  center         Center?       @relation("CenterUsers", fields: [centerId], references: [id])
-  managedCenter  Center?       @relation("CenterManager")
-  teacherClasses Class[]       @relation("ClassTeacher")
-  childParents   ChildParent[]
-  sentMessages   Message[]     @relation("MessageSender")
-  receivedMessages Message[]   @relation("MessageReceiver")
-  notifications  Notification[]
-  refreshTokens  RefreshToken[]
-  createdActivities Activity[] @relation("ActivityCreator")
+  center            Center?          @relation("CenterUsers", fields: [centerId], references: [id])
+  managedCenter     Center?          @relation("CenterManager")
+  teacherClasses    Class[]          @relation("ClassTeacher")
+  childParents      ChildParent[]
+  sentMessages      Message[]        @relation("MessageSender")
+  receivedMessages  Message[]        @relation("MessageReceiver")
+  notifications     Notification[]
+  refreshTokens     RefreshToken[]
+  createdActivities Activity[]       @relation("ActivityCreator")
+  leaveRequests     LeaveRequest[]   @relation("LeaveRequester")
+  leaveReviews      LeaveRequest[]   @relation("LeaveReviewer")
+  assignedActivities ActivityAssignment[] @relation("AssignmentTeacher")
 
   @@index([email])
   @@index([centerId])
@@ -128,38 +165,65 @@ model OtpCode {
 }
 
 model Center {
-  id        String   @id @default(cuid())
-  name      String
-  address   String
-  phone     String?
-  email     String?
-  logo      String?
-  managerId String   @unique
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  name        String
+  address     String
+  phone       String?
+  email       String?
+  website     String?
+  logo        String?
+  theme       String?  @default("default")   // default | ocean | forest | sunset | rose
+  themeColor  String?  @default("#4F46E5")   // primary hex colour
+  latitude    Float?
+  longitude   Float?
+  managerId   String   @unique
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  manager    User       @relation("CenterManager", fields: [managerId], references: [id])
-  users      User[]     @relation("CenterUsers")
-  classes    Class[]
-  activities Activity[]
-  children   Child[]
+  manager        User            @relation("CenterManager", fields: [managerId], references: [id])
+  users          User[]          @relation("CenterUsers")
+  classes        Class[]
+  classrooms     Classroom[]
+  activities     Activity[]
+  children       Child[]
+  academicEvents AcademicEvent[]
+  feeStructures  FeeStructure[]
+  feeRecords     FeeRecord[]
 
   @@index([managerId])
 }
 
-model Class {
+model Classroom {
   id        String   @id @default(cuid())
   name      String
-  ageGroup  String   // e.g. '3-4 years'
   centerId  String
-  teacherId String
+  capacity  Int?
+  floor     String?
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  center  Center  @relation(fields: [centerId], references: [id])
+  classes Class[]
+
+  @@index([centerId])
+}
+
+model Class {
+  id          String   @id @default(cuid())
+  name        String
+  ageGroup    String
+  centerId    String
+  teacherId   String
+  classroomId String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   center      Center               @relation(fields: [centerId], references: [id])
   teacher     User                 @relation("ClassTeacher", fields: [teacherId], references: [id])
+  classroom   Classroom?           @relation(fields: [classroomId], references: [id])
   children    Child[]
   assignments ActivityAssignment[]
 
@@ -169,30 +233,34 @@ model Class {
 
 model Child {
   id              String   @id @default(cuid())
+  studentId       String   @unique  // used for parent self-registration
   firstName       String
   lastName        String
   dateOfBirth     DateTime
   photo           String?
   classId         String
   centerId        String
-  medicalNotesEnc String?  // Encrypted at rest
+  medicalNotesEnc String?
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  class       Class             @relation(fields: [classId], references: [id])
-  center      Center            @relation(fields: [centerId], references: [id])
-  parents     ChildParent[]
-  performance ChildPerformance[]
-  attendance  Attendance[]
+  class        Class             @relation(fields: [classId], references: [id])
+  center       Center            @relation(fields: [centerId], references: [id])
+  parents      ChildParent[]
+  performance  ChildPerformance[]
+  attendance   Attendance[]
+  feeRecords   FeeRecord[]
+  leaveRequests LeaveRequest[]
 
   @@index([classId])
   @@index([centerId])
+  @@index([studentId])
 }
 
 model ChildParent {
-  childId  String
-  parentId String
+  childId   String
+  parentId  String
   isPrimary Boolean @default(false)
 
   child  Child @relation(fields: [childId], references: [id], onDelete: Cascade)
@@ -206,21 +274,21 @@ model ChildParent {
 // ─────────────────────────────────────────────────────────────
 
 model Activity {
-  id             String         @id @default(cuid())
-  title          String
-  description    String
-  instructions   String
-  bloomLevels    BloomLevel[]
-  activityType   String         // Individual | Group | Outdoor | Creative
-  ageGroup       String
-  durationMins   Int
-  resources      String[]       // File URLs
-  learningGoals  String[]
-  status         ActivityStatus @default(DRAFT)
-  centerId       String
-  createdById    String
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id            String         @id @default(cuid())
+  title         String
+  description   String
+  instructions  String
+  bloomLevels   BloomLevel[]
+  activityType  String
+  ageGroup      String
+  durationMins  Int
+  resources     String[]
+  learningGoals String[]
+  status        ActivityStatus @default(DRAFT)
+  centerId      String
+  createdById   String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   center      Center               @relation(fields: [centerId], references: [id])
   createdBy   User                 @relation("ActivityCreator", fields: [createdById], references: [id])
@@ -238,13 +306,14 @@ model ActivityAssignment {
   scheduledDate DateTime
   scheduledTime String
   isRecurring   Boolean          @default(false)
-  recurringRule String?          // RRULE string
+  recurringRule String?
   status        AssignmentStatus @default(PENDING)
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
-  activity Activity       @relation(fields: [activityId], references: [id])
-  class    Class          @relation(fields: [classId], references: [id])
+  activity Activity        @relation(fields: [activityId], references: [id])
+  class    Class           @relation(fields: [classId], references: [id])
+  teacher  User            @relation("AssignmentTeacher", fields: [teacherId], references: [id])
   record   ActivityRecord?
 
   @@index([activityId])
@@ -266,7 +335,7 @@ model ActivityRecord {
 }
 
 // ─────────────────────────────────────────────────────────────
-// PERFORMANCE & ATTENDANCE MODELS
+// PERFORMANCE & ATTENDANCE
 // ─────────────────────────────────────────────────────────────
 
 model ChildPerformance {
@@ -275,7 +344,7 @@ model ChildPerformance {
   childId            String
   completionStatus   CompletionStatus
   bloomLevelAchieved BloomLevel
-  skillRatings       Json             // { "goal": rating 1-5 }
+  skillRatings       Json
   observationNotes   String?
   evidenceUrls       String[]
   isFlagged          Boolean          @default(false)
@@ -306,6 +375,102 @@ model Attendance {
   @@unique([childId, date])
   @@index([childId])
   @@index([date])
+}
+
+// ─────────────────────────────────────────────────────────────
+// ACADEMIC CALENDAR
+// ─────────────────────────────────────────────────────────────
+
+model AcademicEvent {
+  id          String    @id @default(cuid())
+  centerId    String
+  title       String
+  description String?
+  eventType   EventType @default(OTHER)
+  startDate   DateTime
+  endDate     DateTime
+  isPublic    Boolean   @default(true)
+  createdBy   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  center Center @relation(fields: [centerId], references: [id])
+
+  @@index([centerId])
+  @@index([startDate])
+}
+
+// ─────────────────────────────────────────────────────────────
+// FEE MANAGEMENT
+// ─────────────────────────────────────────────────────────────
+
+model FeeStructure {
+  id          String       @id @default(cuid())
+  centerId    String
+  name        String
+  description String?
+  amount      Decimal      @db.Decimal(10, 2)
+  frequency   FeeFrequency @default(MONTHLY)
+  dueDay      Int?         // day of month (1-31)
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  center     Center      @relation(fields: [centerId], references: [id])
+  feeRecords FeeRecord[]
+
+  @@index([centerId])
+}
+
+model FeeRecord {
+  id             String    @id @default(cuid())
+  childId        String
+  feeStructureId String
+  centerId       String
+  amount         Decimal   @db.Decimal(10, 2)
+  dueDate        DateTime
+  paidDate       DateTime?
+  paidAmount     Decimal?  @db.Decimal(10, 2)
+  status         FeeStatus @default(PENDING)
+  receiptNote    String?
+  createdBy      String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  child        Child        @relation(fields: [childId], references: [id])
+  feeStructure FeeStructure @relation(fields: [feeStructureId], references: [id])
+  center       Center       @relation(fields: [centerId], references: [id])
+
+  @@index([childId])
+  @@index([centerId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+// ─────────────────────────────────────────────────────────────
+// LEAVE REQUESTS
+// ─────────────────────────────────────────────────────────────
+
+model LeaveRequest {
+  id          String      @id @default(cuid())
+  childId     String
+  requestedBy String
+  startDate   DateTime
+  endDate     DateTime
+  reason      String
+  status      LeaveStatus @default(PENDING)
+  reviewedBy  String?
+  reviewNote  String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  child    Child  @relation(fields: [childId], references: [id])
+  parent   User   @relation("LeaveRequester", fields: [requestedBy], references: [id])
+  reviewer User?  @relation("LeaveReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([childId])
+  @@index([requestedBy])
+  @@index([status])
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -345,7 +510,7 @@ model Notification {
   type      NotificationType
   title     String
   message   String
-  data      Json?            // Extra payload (e.g., childId, activityId)
+  data      Json?
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
 

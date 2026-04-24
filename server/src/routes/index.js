@@ -15,5 +15,9 @@ router.use('/messages',      require('./message.routes'));
 router.use('/dashboard',     require('./dashboard.routes'));
 router.use('/reports',       require('./report.routes'));
 router.use('/notifications', require('./notification.routes'));
+router.use('/classrooms',   require('./classroom.routes'));
+router.use('/calendar',     require('./calendar.routes'));
+router.use('/fees',         require('./fee.routes'));
+router.use('/leave',        require('./leave.routes'));
 
 module.exports = router;

@@ -224,4 +224,94 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
-module.exports = { login, logout, refresh, getMe, forgotPassword, resetPassword };
+/**
+ * POST /api/auth/register-parent
+ * Parent self-registration using their child's studentId
+ */
+const registerParent = async (req, res, next) => {
+  try {
+    const schema = z.object({
+      studentId: z.string().min(1),
+      name:      z.string().min(2),
+      email:     z.string().email(),
+      password:  z.string().min(8),
+      phone:     z.string().optional(),
+    });
+
+    const { studentId, name, email, password, phone } = schema.parse(req.body);
+
+    // Verify child exists
+    const child = await prisma.child.findUnique({ where: { studentId }, include: { center: true } });
+    if (!child) {
+      return res.status(404).json({ success: false, message: 'Student ID not found. Please check and try again.' });
+    }
+
+    // Check email not already used
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) {
+      return res.status(409).json({ success: false, message: 'Email already in use.' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    const parent = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: { name, email, passwordHash, role: 'PARENT', centerId: child.centerId, phone },
+        select: { id: true, name: true, email: true, role: true, centerId: true },
+      });
+
+      // Link parent to child (if not already linked)
+      const alreadyLinked = await tx.childParent.findUnique({
+        where: { childId_parentId: { childId: child.id, parentId: user.id } },
+      });
+      if (!alreadyLinked) {
+        await tx.childParent.create({ data: { childId: child.id, parentId: user.id, isPrimary: true } });
+      }
+
+      return user;
+    });
+
+    const { accessToken, refreshToken } = generateTokens(parent);
+
+    await prisma.refreshToken.create({
+      data: { token: refreshToken, userId: parent.id, expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: {
+        accessToken,
+        user: { id: parent.id, name: parent.name, email: parent.email, role: parent.role, centerId: parent.centerId },
+        child: { id: child.id, firstName: child.firstName, lastName: child.lastName, studentId: child.studentId },
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * GET /api/auth/verify-student/:studentId
+ * Public endpoint – look up a child by studentId (no auth required)
+ */
+const verifyStudentId = async (req, res, next) => {
+  try {
+    const child = await prisma.child.findUnique({
+      where: { studentId: req.params.studentId },
+      select: { id: true, firstName: true, lastName: true, studentId: true, center: { select: { name: true } } },
+    });
+    if (!child) return res.status(404).json({ success: false, message: 'Student ID not found.' });
+    res.json({ success: true, data: child });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { login, logout, refresh, getMe, forgotPassword, resetPassword, registerParent, verifyStudentId };
