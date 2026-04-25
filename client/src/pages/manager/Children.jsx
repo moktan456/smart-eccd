@@ -31,6 +31,7 @@ const MgrChildren = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [newStudentId, setNewStudentId] = useState(null); // shown after successful enrolment
 
   const load = useCallback(() => {
     setLoading(true);
@@ -105,10 +106,12 @@ const MgrChildren = () => {
 
       if (editChild) {
         await api.put(`/children/${editChild.id}`, payload);
+        setShowModal(false);
       } else {
-        await api.post('/children', payload);
+        const { data } = await api.post('/children', payload);
+        setShowModal(false);
+        setNewStudentId(data.data.studentId); // show the generated ID
       }
-      setShowModal(false);
       load();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save child record.');
@@ -138,6 +141,14 @@ const MgrChildren = () => {
         </div>
       ),
     },
+    {
+      key: 'studentId', label: 'Student ID',
+      render: r => (
+        <span className="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded-md">
+          {r.studentId || '—'}
+        </span>
+      ),
+    },
     { key: 'class', label: 'Class', render: r => r.class?.name || <span className="text-gray-400 text-sm">—</span> },
     {
       key: 'parents', label: 'Parent(s)',
@@ -162,6 +173,23 @@ const MgrChildren = () => {
         <h1 className="text-2xl font-bold text-gray-900">Children</h1>
         <Button onClick={openCreate}>+ Enrol Child</Button>
       </div>
+
+      {/* Student ID success banner */}
+      {newStudentId && (
+        <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-xl">
+          <div className="flex items-center gap-3">
+            <span className="text-green-600 text-xl">✅</span>
+            <div>
+              <p className="text-sm font-semibold text-green-800">Child enrolled successfully!</p>
+              <p className="text-sm text-green-700">
+                Student ID: <span className="font-mono font-bold text-lg tracking-wide">{newStudentId}</span>
+                <span className="ml-2 text-xs text-green-600">— Share this with the parent to register their account</span>
+              </p>
+            </div>
+          </div>
+          <button onClick={() => setNewStudentId(null)} className="text-green-500 hover:text-green-700 text-lg font-bold">×</button>
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-3">
         <Input
@@ -199,6 +227,18 @@ const MgrChildren = () => {
       >
         <form id="child-form" onSubmit={handleSubmit} className="space-y-4">
           {error && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>}
+          {!editChild && (
+            <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-100 rounded-lg text-xs text-blue-700">
+              <span>🪪</span>
+              <span>A unique <strong>Student ID</strong> (e.g. STU-2026-0001) will be auto-generated and shown after enrolment. Share it with the parent so they can register their account.</span>
+            </div>
+          )}
+          {editChild && editChild.studentId && (
+            <div className="flex items-center gap-2 p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700">
+              <span>🪪</span>
+              <span>Student ID: <strong className="font-mono text-sm">{editChild.studentId}</strong></span>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <Input

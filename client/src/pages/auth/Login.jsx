@@ -28,7 +28,7 @@ const Login = () => {
           <div className="w-16 h-16 bg-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <span className="text-white font-bold text-2xl">SE</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">SMART ECCD</h1>
+          <h1 className="text-2xl font-bold text-gray-900">SMART ECCD <span className="text-primary-600 text-lg">v2.0</span></h1>
           <p className="text-gray-500 text-sm mt-1">Child Care Center Management Platform</p>
         </div>
 
