@@ -5,11 +5,16 @@ const prisma = require('../config/db');
 const { paginate, paginatedResponse } = require('../utils/helpers');
 
 const centerSchema = z.object({
-  name: z.string().min(2),
-  address: z.string().min(5),
-  phone: z.string().optional(),
-  email: z.string().email().optional(),
-  managerId: z.string(),
+  name:       z.string().min(2),
+  address:    z.string().min(5),
+  phone:      z.string().optional().nullable(),
+  email:      z.string().email().optional().nullable(),
+  website:    z.string().optional().nullable(),
+  managerId:  z.string(),
+  theme:      z.string().optional().default('default'),
+  themeColor: z.string().optional().default('#4F46E5'),
+  latitude:   z.number().optional().nullable(),
+  longitude:  z.number().optional().nullable(),
 });
 
 const updateCenterSchema = centerSchema.partial();
