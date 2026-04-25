@@ -30,6 +30,8 @@ const MgrClassrooms     = lazy(() => import('./pages/manager/Classrooms'));
 const MgrCalendar       = lazy(() => import('./pages/manager/Calendar'));
 const MgrFees           = lazy(() => import('./pages/manager/FeeManagement'));
 const MgrLeaveReview    = lazy(() => import('./pages/manager/LeaveReview'));
+const MgrStaff          = lazy(() => import('./pages/manager/Staff'));
+const MgrNotifications  = lazy(() => import('./pages/manager/Notifications'));
 
 // Teacher
 const TeacherDashboard  = lazy(() => import('./pages/teacher/Dashboard'));
@@ -44,6 +46,7 @@ const ParentPerformance = lazy(() => import('./pages/parent/ChildPerformance'));
 const ParentAttendance  = lazy(() => import('./pages/parent/ChildAttendance'));
 const ParentMessages    = lazy(() => import('./pages/parent/Messages'));
 const ParentLeave       = lazy(() => import('./pages/parent/LeaveRequest'));
+const ParentReports     = lazy(() => import('./pages/parent/Reports'));
 
 // Shared
 const Notifications = lazy(() => import('./pages/Notifications'));
@@ -103,6 +106,8 @@ const App = () => (
             <Route path="/manager/calendar"               element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrCalendar /></ProtectedRoute>} />
             <Route path="/manager/fees"                   element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrFees /></ProtectedRoute>} />
             <Route path="/manager/leave"                  element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrLeaveReview /></ProtectedRoute>} />
+            <Route path="/manager/staff"                  element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrStaff /></ProtectedRoute>} />
+            <Route path="/manager/notifications"          element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrNotifications /></ProtectedRoute>} />
 
             {/* Teacher */}
             <Route path="/teacher/dashboard"              element={<ProtectedRoute roles={['TEACHER']}><TeacherDashboard /></ProtectedRoute>} />
@@ -118,6 +123,7 @@ const App = () => (
             <Route path="/parent/messages"                      element={<ProtectedRoute roles={['PARENT']}><ParentMessages /></ProtectedRoute>} />
             <Route path="/parent/leave"                         element={<ProtectedRoute roles={['PARENT']}><ParentLeave /></ProtectedRoute>} />
             <Route path="/parent/leave/new"                     element={<ProtectedRoute roles={['PARENT']}><ParentLeave /></ProtectedRoute>} />
+            <Route path="/parent/reports"                       element={<ProtectedRoute roles={['PARENT']}><ParentReports /></ProtectedRoute>} />
 
             {/* Shared */}
             <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
