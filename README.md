@@ -1,4 +1,5 @@
 # SMART ECCD v2.0
+
 ### Smart Management and Assessment Resource Tool for Early Childhood Care and Development
 
 A full-stack web application for managing ECCD centers, tracking student learning using Bloom's Taxonomy, handling attendance, fees, leave, and communication between managers, teachers, and parents.
@@ -25,20 +26,21 @@ A full-stack web application for managing ECCD centers, tracking student learnin
 
 ## System Requirements
 
-| Component | Minimum | Recommended |
-|-----------|---------|-------------|
-| OS | Ubuntu 20.04 LTS | Ubuntu 22.04 LTS |
-| CPU | 2 cores | 4 cores |
-| RAM | 2 GB | 4 GB |
-| Disk | 10 GB | 20 GB |
-| Node.js | v18.x | v20.x LTS |
-| PostgreSQL | 14 | 15 |
+| Component  | Minimum          | Recommended      |
+| ---------- | ---------------- | ---------------- |
+| OS         | Ubuntu 20.04 LTS | Ubuntu 22.04 LTS |
+| CPU        | 2 cores          | 4 cores          |
+| RAM        | 2 GB             | 4 GB             |
+| Disk       | 10 GB            | 20 GB            |
+| Node.js    | v18.x            | v20.x LTS        |
+| PostgreSQL | 14               | 15               |
 
 ---
 
 ## Tech Stack
 
 **Backend**
+
 - Node.js 20 + Express.js
 - Prisma ORM (PostgreSQL)
 - JSON Web Tokens (JWT) with httpOnly cookies
@@ -47,6 +49,7 @@ A full-stack web application for managing ECCD centers, tracking student learnin
 - Bcrypt for password hashing
 
 **Frontend**
+
 - React 18 + Vite
 - TailwindCSS
 - React Router v6
@@ -127,7 +130,7 @@ git --version
 
 ```bash
 cd /var/www
-sudo git clone https://github.com/YOUR_USERNAME/smart-eccd.git
+sudo git clone https://github.com/moktan456/smart-eccd.git
 sudo chown -R $USER:$USER smart-eccd
 cd smart-eccd
 ```
@@ -254,6 +257,7 @@ VITE_API_URL=http://localhost:5000/api
 ### Development Mode (Local)
 
 **Terminal 1 — Start Backend:**
+
 ```bash
 cd server
 npm run dev
@@ -261,6 +265,7 @@ npm run dev
 ```
 
 **Terminal 2 — Start Frontend:**
+
 ```bash
 cd client
 npm run dev
@@ -297,6 +302,7 @@ node prisma/seed.js
 ```
 
 This creates:
+
 - A Super Admin account
 - A sample ECCD Center
 - A Center Manager account
@@ -322,9 +328,9 @@ The backend (`server/src/index.js`) should be configured to serve the built fron
 
 ```javascript
 // Serve built frontend
-app.use(express.static(path.join(__dirname, '../../client/dist')));
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
+app.use(express.static(path.join(__dirname, "../../client/dist")));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../client/dist/index.html"));
 });
 ```
 
@@ -478,17 +484,20 @@ sudo systemctl start cloudflared
 Once you have your public URL, update:
 
 **`server/.env`:**
+
 ```env
 CLIENT_URL=https://your-subdomain.your-domain.com
 COOKIE_SECURE=true
 ```
 
 **`client/.env`:**
+
 ```env
 VITE_API_URL=https://your-subdomain.your-domain.com/api
 ```
 
 Then rebuild and restart:
+
 ```bash
 cd /var/www/smart-eccd/client
 npm run build
@@ -501,11 +510,11 @@ sudo systemctl restart smart-eccd
 
 After seeding the database, use these credentials to log in:
 
-| Role | Email | Password |
-|------|-------|----------|
-| Super Admin | admin@smarteccd.com | Admin@123 |
-| Center Manager | manager@demo.com | Manager@123 |
-| Teacher | teacher@demo.com | Teacher@123 |
+| Role           | Email               | Password    |
+| -------------- | ------------------- | ----------- |
+| Super Admin    | admin@smarteccd.com | Admin@123   |
+| Center Manager | manager@demo.com    | Manager@123 |
+| Teacher        | teacher@demo.com    | Teacher@123 |
 
 > **Important:** Change all default passwords immediately in production via the Profile page.
 
@@ -513,12 +522,12 @@ After seeding the database, use these credentials to log in:
 
 ## Role Overview
 
-| Role | Description | Key Permissions |
-|------|-------------|-----------------|
-| **SUPER_ADMIN** | System-wide administrator | Manage centers, manage all users, system settings |
+| Role               | Description                  | Key Permissions                                                         |
+| ------------------ | ---------------------------- | ----------------------------------------------------------------------- |
+| **SUPER_ADMIN**    | System-wide administrator    | Manage centers, manage all users, system settings                       |
 | **CENTER_MANAGER** | Manages a single ECCD center | Staff, children, classes, fees, leave, calendar, reports, notifications |
-| **TEACHER** | Assigned to classes | Conduct activities, take attendance, view assigned children |
-| **PARENT** | Child's guardian | View child's progress, submit leave requests, receive messages |
+| **TEACHER**        | Assigned to classes          | Conduct activities, take attendance, view assigned children             |
+| **PARENT**         | Child's guardian             | View child's progress, submit leave requests, receive messages          |
 
 ### Parent Self-Registration
 
@@ -530,21 +539,21 @@ Parents can self-register at `/register` using their child's **Student ID** (for
 
 The backend exposes a REST API at `/api`. Key endpoints:
 
-| Module | Base Path |
-|--------|-----------|
+| Module         | Base Path                                                                 |
+| -------------- | ------------------------------------------------------------------------- |
 | Authentication | `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout` |
-| Centers | `GET/POST /api/centers`, `GET/PUT/DELETE /api/centers/:id` |
-| Users | `GET/POST /api/users`, `GET/PUT/DELETE /api/users/:id` |
-| Children | `GET/POST /api/children`, `GET/PUT /api/children/:id` |
-| Classes | `GET/POST /api/classes`, `GET/PUT/DELETE /api/classes/:id` |
-| Classrooms | `GET/POST /api/classrooms`, `PUT/DELETE /api/classrooms/:id` |
-| Activities | `GET/POST /api/activities`, `PUT /api/activities/:id` |
-| Attendance | `GET/POST /api/attendance` |
-| Fees | `GET/POST /api/fees`, `POST /api/fees/assign`, `POST /api/fees/payments` |
-| Leave | `GET/POST /api/leave`, `PATCH /api/leave/:id/status` |
-| Calendar | `GET/POST /api/calendar`, `PUT/DELETE /api/calendar/:id` |
-| Notifications | `GET /api/notifications`, `POST /api/notifications/broadcast` |
-| Reports | `GET /api/reports/child/:id/progress` |
+| Centers        | `GET/POST /api/centers`, `GET/PUT/DELETE /api/centers/:id`                |
+| Users          | `GET/POST /api/users`, `GET/PUT/DELETE /api/users/:id`                    |
+| Children       | `GET/POST /api/children`, `GET/PUT /api/children/:id`                     |
+| Classes        | `GET/POST /api/classes`, `GET/PUT/DELETE /api/classes/:id`                |
+| Classrooms     | `GET/POST /api/classrooms`, `PUT/DELETE /api/classrooms/:id`              |
+| Activities     | `GET/POST /api/activities`, `PUT /api/activities/:id`                     |
+| Attendance     | `GET/POST /api/attendance`                                                |
+| Fees           | `GET/POST /api/fees`, `POST /api/fees/assign`, `POST /api/fees/payments`  |
+| Leave          | `GET/POST /api/leave`, `PATCH /api/leave/:id/status`                      |
+| Calendar       | `GET/POST /api/calendar`, `PUT/DELETE /api/calendar/:id`                  |
+| Notifications  | `GET /api/notifications`, `POST /api/notifications/broadcast`             |
+| Reports        | `GET /api/reports/child/:id/progress`                                     |
 
 ---
 
@@ -553,6 +562,7 @@ The backend exposes a REST API at `/api`. Key endpoints:
 ### Port Already in Use (EADDRINUSE :5000)
 
 The systemd service is already running the app. Don't run `npm start` manually — use:
+
 ```bash
 sudo systemctl restart smart-eccd
 ```
@@ -568,6 +578,7 @@ GRANT ALL ON SCHEMA public TO smart_eccd;
 ### Prisma Client Out of Date
 
 After any schema change, regenerate the client:
+
 ```bash
 cd server
 npx prisma generate
@@ -577,6 +588,7 @@ sudo systemctl restart smart-eccd
 ### Frontend Not Reflecting Code Changes
 
 You must rebuild the frontend after any changes:
+
 ```bash
 cd client
 npm run build
@@ -586,6 +598,7 @@ sudo systemctl restart smart-eccd
 ### Migration Fails with P3018
 
 If you see a migration error about `ADD CONSTRAINT IF NOT EXISTS`, PostgreSQL does not support that syntax. The migration must use a DO block:
+
 ```sql
 DO $$ BEGIN
   ALTER TABLE "YourTable" ADD CONSTRAINT "YourConstraint" ...;
@@ -603,6 +616,7 @@ cd ../client && npm install
 ### Seed Fails with "Unknown argument studentId"
 
 The Prisma client is outdated. Run:
+
 ```bash
 cd server
 npx prisma generate
@@ -612,6 +626,7 @@ node prisma/seed.js
 ### Database Connection Refused
 
 Ensure PostgreSQL is running:
+
 ```bash
 sudo systemctl status postgresql
 sudo systemctl start postgresql
@@ -642,4 +657,4 @@ This project is proprietary software developed for ECCD center management. All r
 
 ---
 
-*SMART ECCD v2.0 — Built with Node.js, React, PostgreSQL & Prisma*
+_SMART ECCD v2.0 — Built with Node.js, React, PostgreSQL & Prisma_
