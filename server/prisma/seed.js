@@ -104,6 +104,7 @@ async function main() {
       firstName: 'Sofia',
       lastName: 'dela Cruz',
       dateOfBirth: new Date('2020-03-15'),
+      studentId: 'STU-2026-0001',
       classId: klass.id,
       centerId: center.id,
     },
