@@ -8,13 +8,14 @@ const centerSchema = z.object({
   name:       z.string().min(2),
   address:    z.string().min(5),
   phone:      z.string().optional().nullable(),
-  email:      z.string().email().optional().nullable(),
+  email:      z.union([z.string().email(), z.literal(''), z.null()]).optional(),
   website:    z.string().optional().nullable(),
-  managerId:  z.string(),
+  managerId:  z.string().optional(),
   theme:      z.string().optional().default('default'),
   themeColor: z.string().optional().default('#4F46E5'),
-  latitude:   z.number().optional().nullable(),
-  longitude:  z.number().optional().nullable(),
+  // Accept both number and numeric string from form inputs
+  latitude:   z.union([z.number(), z.string().transform(v => v === '' ? null : parseFloat(v)), z.null()]).optional(),
+  longitude:  z.union([z.number(), z.string().transform(v => v === '' ? null : parseFloat(v)), z.null()]).optional(),
 });
 
 const updateCenterSchema = centerSchema.partial();
@@ -86,6 +87,11 @@ const createCenter = async (req, res, next) => {
 const updateCenter = async (req, res, next) => {
   try {
     const data = updateCenterSchema.parse(req.body);
+    // Strip empty strings and undefined managerId
+    if (data.email === '') data.email = null;
+    if (data.website === '') data.website = null;
+    if (data.phone === '') data.phone = null;
+    delete data.managerId; // prevent reassigning manager via settings page
     const center = await prisma.center.update({
       where: { id: req.params.id },
       data,
