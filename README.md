@@ -135,7 +135,6 @@ sudo chown -R $USER:$USER smart-eccd
 cd smart-eccd
 ```
 
-> **Note:** Replace `YOUR_USERNAME` and repository URL with your actual GitHub details.
 
 ### 2. Install Backend Dependencies
 
