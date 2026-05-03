@@ -21,6 +21,7 @@ A full-stack web application for managing ECCD centers, tracking student learnin
 11. [Default Credentials](#default-credentials)
 12. [Role Overview](#role-overview)
 13. [Common Issues & Fixes](#common-issues--fixes)
+14. [Free Cloud Deployment: Render + Vercel + Neon](#free-cloud-deployment-render--vercel--neon)
 
 ---
 
@@ -657,3 +658,206 @@ This project is proprietary software developed for ECCD center management. All r
 ---
 
 _SMART ECCD v2.0 — Built with Node.js, React, PostgreSQL & Prisma_
+
+---
+
+## Free Cloud Deployment: Render + Vercel + Neon
+
+Deploy SMART ECCD for free using:
+
+| Service | What it hosts | Free tier |
+|---------|--------------|-----------|
+| [Neon](https://neon.tech) | PostgreSQL database | 0.5 GB, always on |
+| [Render](https://render.com) | Node.js backend API | 750 hrs/month |
+| [Vercel](https://vercel.com) | React frontend | Unlimited, always free |
+
+> **Render free tier note:** The free web service sleeps after 15 minutes of inactivity and takes ~30–50 seconds to wake on the first request. This is expected behavior on the free plan.
+
+---
+
+### Prerequisites
+
+- GitHub account with this repository pushed (public or private)
+- Accounts created at neon.tech, render.com, and vercel.com (all free, sign up with GitHub)
+
+---
+
+### Step 1 — Set Up the Neon Database
+
+1. Go to [neon.tech](https://neon.tech) and click **Sign Up** (use GitHub for fastest setup)
+2. Click **Create a project**, give it any name (e.g., `smart-eccd`), select the closest region, and click **Create project**
+3. On the project dashboard, click **Connect** (or go to **Connection Details**)
+4. Select **Connection string** tab and copy the full URL — it looks like:
+   ```
+   postgresql://smart_eccd_owner:XXXXXXXXXXXX@ep-xxx-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require
+   ```
+5. Save this URL — you will need it in Step 2 and Step 4
+
+> **SSL is required.** The `?sslmode=require` at the end of the Neon URL is mandatory. Do not remove it.
+
+---
+
+### Step 2 — Deploy the Backend on Render
+
+1. Go to [render.com](https://render.com) and click **Get Started for Free** (sign in with GitHub)
+2. Click **New +** → **Web Service**
+3. Select **Connect a repository** and choose your SMART ECCD GitHub repository
+4. Render will auto-detect the `render.yaml` file. If it does, click **Apply** and skip to step 6. If not, continue with the manual settings below:
+   - **Name:** `smart-eccd-api`
+   - **Root Directory:** `server`
+   - **Runtime:** `Node`
+   - **Build Command:**
+     ```
+     npm install && npx prisma generate && npx prisma migrate deploy
+     ```
+   - **Start Command:**
+     ```
+     node server.js
+     ```
+   - **Instance Type:** `Free`
+
+5. If Render auto-detected `render.yaml`, open the service after creation, go to **Settings → Build & Deploy** and update the **Build Command** to:
+   ```
+   npm install && npx prisma generate && npx prisma migrate deploy
+   ```
+   This ensures the database schema is applied on every deploy.
+
+6. Go to the **Environment** tab and add the following environment variables:
+
+   | Key | Value |
+   |-----|-------|
+   | `NODE_ENV` | `production` |
+   | `DATABASE_URL` | *(paste your full Neon connection string from Step 1)* |
+   | `JWT_SECRET` | *(click "Generate" for a random value)* |
+   | `JWT_REFRESH_SECRET` | *(click "Generate" for a random value)* |
+   | `JWT_EXPIRES_IN` | `15m` |
+   | `JWT_REFRESH_EXPIRES_IN` | `7d` |
+   | `CLIENT_URL` | *(leave blank for now — fill in after Step 3)* |
+   | `UPLOAD_PROVIDER` | `local` |
+   | `ENABLE_REAL_TIME` | `true` |
+   | `ENABLE_EMAIL_NOTIFICATIONS` | `false` |
+   | `ENABLE_PDF_REPORTS` | `false` |
+   | `PUPPETEER_SKIP_DOWNLOAD` | `true` |
+
+7. Click **Save Changes**, then click **Manual Deploy → Deploy latest commit**
+8. Watch the build logs — the deploy is successful when you see `Server running on port ...`
+9. Copy your backend URL from the top of the Render dashboard — it will look like:
+   ```
+   https://smart-eccd-api.onrender.com
+   ```
+
+---
+
+### Step 3 — Deploy the Frontend on Vercel
+
+1. Go to [vercel.com](https://vercel.com) and click **Sign Up** (use GitHub)
+2. Click **Add New → Project**
+3. Select your SMART ECCD repository and click **Import**
+4. Vercel will auto-detect Vite. Confirm or set these settings:
+   - **Framework Preset:** `Vite`
+   - **Root Directory:** `client`
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+5. Expand **Environment Variables** and add:
+
+   | Key | Value |
+   |-----|-------|
+   | `VITE_API_URL` | *(your Render backend URL from Step 2, e.g. `https://smart-eccd-api.onrender.com`)* |
+
+   > Do **not** add `/api` at the end — the app appends it automatically.
+
+6. Click **Deploy** and wait for the build to finish (usually under 2 minutes)
+7. Copy your frontend URL — it will look like:
+   ```
+   https://smart-eccd.vercel.app
+   ```
+
+---
+
+### Step 4 — Connect Frontend URL to Backend
+
+Now that you have the Vercel URL, go back to Render and update the missing environment variable:
+
+1. Open your `smart-eccd-api` service on Render
+2. Go to **Environment** tab
+3. Set `CLIENT_URL` to your Vercel frontend URL (e.g., `https://smart-eccd.vercel.app`)
+4. Click **Save Changes** — Render will automatically redeploy
+
+---
+
+### Step 5 — Seed the Database (First-Time Setup)
+
+After the backend is deployed and running, seed the database to create the default admin accounts:
+
+1. In your Render service dashboard, go to **Shell** (top navigation)
+2. Run:
+   ```bash
+   node prisma/seed.js
+   ```
+3. You should see a success message confirming the seed data was created
+
+Alternatively, run it locally (requires your Neon `DATABASE_URL` set in `server/.env`):
+
+```bash
+cd server
+DATABASE_URL="your-neon-connection-string" node prisma/seed.js
+```
+
+This creates the default accounts listed in the [Default Credentials](#default-credentials) section above.
+
+---
+
+### Step 6 — Verify the Deployment
+
+1. Open your Vercel URL in a browser
+2. Log in with the Super Admin credentials:
+   - **Email:** `admin@smarteccd.com`
+   - **Password:** `Admin@123`
+3. You should be redirected to the Super Admin dashboard
+
+---
+
+### Updating the App After Code Changes
+
+Push your changes to GitHub — both Render and Vercel are connected to your repository and will automatically redeploy on every push to `main`.
+
+If you make database schema changes (edit `schema.prisma`), the build command `npx prisma migrate deploy` will apply them automatically on the next deploy.
+
+---
+
+### Troubleshooting Cloud Deployment
+
+#### Backend deploy fails with "Can't reach database server"
+
+- Confirm the `DATABASE_URL` in Render exactly matches the Neon connection string including `?sslmode=require`
+- In Neon dashboard, check that your project is **Active** (not suspended)
+- Neon free projects suspend after 5 days of inactivity — click **Restore** in the Neon dashboard to wake it
+
+#### Frontend shows "Network Error" or blank screen after login
+
+- Confirm `VITE_API_URL` in Vercel is set to your Render URL with no trailing slash and no `/api` suffix
+- Check that `CLIENT_URL` in Render matches your Vercel URL exactly (including `https://`)
+- Open browser DevTools → Network tab to see what URL the frontend is calling
+
+#### First request to backend is very slow (30–50 seconds)
+
+This is normal for Render's free tier — the service spins down after 15 minutes of inactivity and cold-starts on the next request. Subsequent requests are fast.
+
+#### Render build fails with "prisma: command not found"
+
+Update the Render build command to use `npx`:
+```
+npm install && npx prisma generate && npx prisma migrate deploy
+```
+
+#### Neon connection works locally but fails on Render
+
+Add `?sslmode=require` to the end of your `DATABASE_URL` if it is not already there. Neon requires SSL for all connections.
+
+#### Vercel build fails with "Could not find root directory"
+
+Make sure the **Root Directory** in Vercel project settings is set to `client`, not the repo root.
+
+---
+
+_Free tier deployment: Neon (database) + Render (backend) + Vercel (frontend)_
