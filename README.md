@@ -787,21 +787,32 @@ Now that you have the Vercel URL, go back to Render and update the missing envir
 
 ### Step 5 — Seed the Database (First-Time Setup)
 
-After the backend is deployed and running, seed the database to create the default admin accounts:
+Run the seed from your **local machine** while pointing directly at the Neon database. This works on the free Render tier without needing shell access.
 
-1. In your Render service dashboard, go to **Shell** (top navigation)
-2. Run:
+1. Open a terminal on your local machine and navigate to the `server` folder:
+   ```bash
+   cd "path/to/SMART ECCD/server"
+   ```
+
+2. Create or open `server/.env` and temporarily set `DATABASE_URL` to your Neon connection string:
+   ```env
+   DATABASE_URL="postgresql://smart_eccd_owner:XXXXXXXXXXXX@ep-xxx-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require"
+   ```
+   Replace the value with your actual Neon connection string from Step 1.
+
+3. Generate the Prisma client locally (required before seeding):
+   ```bash
+   npx prisma generate
+   ```
+
+4. Run the seed:
    ```bash
    node prisma/seed.js
    ```
-3. You should see a success message confirming the seed data was created
 
-Alternatively, run it locally (requires your Neon `DATABASE_URL` set in `server/.env`):
+5. You should see output confirming the Super Admin, Center Manager, Teacher, and sample child were created.
 
-```bash
-cd server
-DATABASE_URL="your-neon-connection-string" node prisma/seed.js
-```
+> The seed writes directly to your Neon cloud database, so once it finishes the data is immediately available to your deployed backend on Render.
 
 This creates the default accounts listed in the [Default Credentials](#default-credentials) section above.
 
