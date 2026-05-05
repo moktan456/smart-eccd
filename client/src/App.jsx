@@ -31,11 +31,13 @@ const MgrStaff          = lazy(() => import('./pages/manager/Staff'));
 const MgrNotifications  = lazy(() => import('./pages/manager/Notifications'));
 
 // Teacher
-const TeacherDashboard  = lazy(() => import('./pages/teacher/Dashboard'));
-const TeacherActivities = lazy(() => import('./pages/teacher/Activities'));
-const TeacherConduct    = lazy(() => import('./pages/teacher/ConductActivity'));
-const TeacherChildren   = lazy(() => import('./pages/teacher/Children'));
-const TeacherAttendance = lazy(() => import('./pages/teacher/Attendance'));
+const TeacherDashboard      = lazy(() => import('./pages/teacher/Dashboard'));
+const TeacherActivities     = lazy(() => import('./pages/teacher/Activities'));
+const TeacherActivityNew    = lazy(() => import('./pages/teacher/ActivityNew'));
+const TeacherActivityAssign = lazy(() => import('./pages/teacher/ActivityAssign'));
+const TeacherConduct        = lazy(() => import('./pages/teacher/ConductActivity'));
+const TeacherChildren       = lazy(() => import('./pages/teacher/Children'));
+const TeacherAttendance     = lazy(() => import('./pages/teacher/Attendance'));
 
 // Parent
 const ParentDashboard   = lazy(() => import('./pages/parent/Dashboard'));
@@ -106,6 +108,8 @@ const App = () => (
             {/* Teacher */}
             <Route path="/teacher/dashboard"              element={<ProtectedRoute roles={['TEACHER']}><TeacherDashboard /></ProtectedRoute>} />
             <Route path="/teacher/activities"             element={<ProtectedRoute roles={['TEACHER']}><TeacherActivities /></ProtectedRoute>} />
+            <Route path="/teacher/activities/new"         element={<ProtectedRoute roles={['TEACHER']}><TeacherActivityNew /></ProtectedRoute>} />
+            <Route path="/teacher/activities/:id/assign"  element={<ProtectedRoute roles={['TEACHER']}><TeacherActivityAssign /></ProtectedRoute>} />
             <Route path="/teacher/activities/:id/conduct" element={<ProtectedRoute roles={['TEACHER']}><TeacherConduct /></ProtectedRoute>} />
             <Route path="/teacher/children"               element={<ProtectedRoute roles={['TEACHER']}><TeacherChildren /></ProtectedRoute>} />
             <Route path="/teacher/attendance"             element={<ProtectedRoute roles={['TEACHER']}><TeacherAttendance /></ProtectedRoute>} />
