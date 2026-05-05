@@ -47,7 +47,6 @@ const NAV_ITEMS = {
     { to: '/manager/classes',        label: 'Classes',        icon: ICONS.building },
     { to: '/manager/classrooms',     label: 'Classrooms',     icon: ICONS.classroom },
     { to: '/manager/children',       label: 'Children',       icon: ICONS.child },
-    { to: '/manager/activities',     label: 'Activities',     icon: ICONS.activity },
     { to: '/manager/calendar',       label: 'Calendar',       icon: ICONS.calendar },
     { to: '/manager/fees',           label: 'Fees',           icon: ICONS.fee },
     { to: '/manager/leave',          label: 'Leave',          icon: ICONS.leave },

@@ -22,9 +22,6 @@ const SaSettings     = lazy(() => import('./pages/superadmin/CenterSettings'));
 const MgrDashboard      = lazy(() => import('./pages/manager/Dashboard'));
 const MgrClasses        = lazy(() => import('./pages/manager/Classes'));
 const MgrChildren       = lazy(() => import('./pages/manager/Children'));
-const MgrActivities     = lazy(() => import('./pages/manager/Activities'));
-const MgrActivityNew    = lazy(() => import('./pages/manager/ActivityNew'));
-const MgrActivityAssign = lazy(() => import('./pages/manager/ActivityAssign'));
 const MgrReports        = lazy(() => import('./pages/manager/Reports'));
 const MgrClassrooms     = lazy(() => import('./pages/manager/Classrooms'));
 const MgrCalendar       = lazy(() => import('./pages/manager/Calendar'));
@@ -98,9 +95,6 @@ const App = () => (
             <Route path="/manager/dashboard"              element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrDashboard /></ProtectedRoute>} />
             <Route path="/manager/classes"                element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrClasses /></ProtectedRoute>} />
             <Route path="/manager/children"               element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrChildren /></ProtectedRoute>} />
-            <Route path="/manager/activities"             element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrActivities /></ProtectedRoute>} />
-            <Route path="/manager/activities/new"         element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrActivityNew /></ProtectedRoute>} />
-            <Route path="/manager/activities/:id/assign"  element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrActivityAssign /></ProtectedRoute>} />
             <Route path="/manager/reports"                element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrReports /></ProtectedRoute>} />
             <Route path="/manager/classrooms"             element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrClassrooms /></ProtectedRoute>} />
             <Route path="/manager/calendar"               element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrCalendar /></ProtectedRoute>} />
