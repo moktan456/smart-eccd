@@ -4,13 +4,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        // SMART ECCD Brand
+        // SMART ECCD Brand — driven by CSS custom properties set at runtime
         primary: {
-          50:  '#eff6ff',
-          100: '#dbeafe',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
+          50:  'var(--color-primary-50)',
+          100: 'var(--color-primary-100)',
+          500: 'var(--color-primary-500)',
+          600: 'var(--color-primary-600)',
+          700: 'var(--color-primary-700)',
         },
         // Bloom's Taxonomy Colors
         bloom: {
