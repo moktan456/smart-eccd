@@ -1,9 +1,11 @@
-// SMART ECCD – Auth Context + Socket.io Initialization
+// SMART ECCD – Auth Context + Socket.io Initialization + Theme Application
 
 import { createContext, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import useAuthStore from '../store/authStore';
 import useNotificationStore from '../store/notificationStore';
+import { centerService } from '../services/center.service';
+import { applyTheme } from '../utils/themes';
 
 // In production, socket connects to the Render backend. In dev, use Vite proxy (same origin '/').
 const SOCKET_URL = import.meta.env.VITE_API_URL || '/';
@@ -20,6 +22,20 @@ export const AuthProvider = ({ children }) => {
       fetchUser();
     }
   }, [accessToken]); // eslint-disable-line
+
+  // Apply center theme when user is loaded
+  useEffect(() => {
+    if (!user) return;
+    if (!user.centerId) return; // SUPER_ADMIN has no centerId — keep default theme
+    centerService.getById(user.centerId)
+      .then(({ data }) => {
+        const center = data.data;
+        if (center?.theme || center?.themeColor) {
+          applyTheme(center.theme, center.themeColor);
+        }
+      })
+      .catch(() => {}); // silently ignore — default theme stays
+  }, [user?.centerId]); // eslint-disable-line
 
   // Initialize Socket.io when user is logged in
   useEffect(() => {
