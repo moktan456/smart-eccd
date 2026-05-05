@@ -11,18 +11,16 @@ import Select from '../../components/common/Select';
 import { ROLE_LABELS } from '../../utils/constants';
 
 const ROLE_FILTER_OPTIONS = [
-  { value: '', label: 'All Roles' },
-  { value: 'SUPER_ADMIN', label: 'Super Admin' },
+  { value: '',               label: 'All Roles' },
+  { value: 'SUPER_ADMIN',   label: 'Super Admin' },
   { value: 'CENTER_MANAGER', label: 'Center Manager' },
-  { value: 'TEACHER', label: 'Teacher' },
-  { value: 'PARENT', label: 'Parent' },
+  { value: 'PARENT',        label: 'Parent' },
 ];
 
 const ROLE_CREATE_OPTIONS = [
-  { value: 'SUPER_ADMIN', label: 'Super Admin' },
   { value: 'CENTER_MANAGER', label: 'Center Manager' },
-  { value: 'TEACHER', label: 'Teacher' },
-  { value: 'PARENT', label: 'Parent' },
+  { value: 'SUPER_ADMIN',   label: 'Super Admin' },
+  { value: 'PARENT',        label: 'Parent' },
 ];
 
 const roleColor = {
@@ -32,7 +30,7 @@ const roleColor = {
   PARENT: 'gray',
 };
 
-const EMPTY_FORM = { name: '', email: '', password: '', role: 'TEACHER', centerId: '' };
+const EMPTY_FORM = { name: '', email: '', password: '', role: 'CENTER_MANAGER', centerId: '' };
 
 const SaUsers = () => {
   const [users, setUsers] = useState([]);
