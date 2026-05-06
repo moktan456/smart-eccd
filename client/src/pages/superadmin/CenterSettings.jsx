@@ -4,21 +4,39 @@ import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
-import { applyTheme } from '../../utils/themes';
-
-const THEMES = [
-  { value: 'default', label: 'Indigo',  color: '#4F46E5' },
-  { value: 'ocean',   label: 'Ocean',   color: '#0EA5E9' },
-  { value: 'forest',  label: 'Forest',  color: '#16A34A' },
-  { value: 'sunset',  label: 'Sunset',  color: '#EA580C' },
-  { value: 'rose',    label: 'Rose',    color: '#E11D48' },
-];
+import { THEMES, applyTheme } from '../../utils/themes';
 
 const EMPTY_FORM = {
   name: '', address: '', phone: '', email: '', website: '',
-  theme: 'default', themeColor: '#4F46E5',
+  theme: 'sneat', themeColor: '#696CFF',
   latitude: '', longitude: '',
 };
+
+// Mini sidebar preview strip rendered inside each theme card
+const ThemePreview = ({ palette, name }) => (
+  <div className="w-full rounded-lg overflow-hidden border border-gray-100 flex" style={{ height: 56 }}>
+    {/* Sidebar strip */}
+    <div className="flex flex-col justify-between p-1.5" style={{ width: 18, backgroundColor: palette[700] }}>
+      {[1,2,3,4].map(i => (
+        <div key={i} className="rounded-sm" style={{ height: 3, backgroundColor: i === 1 ? '#fff' : palette[500], opacity: i === 1 ? 1 : 0.5 }} />
+      ))}
+    </div>
+    {/* Content area */}
+    <div className="flex-1 p-1.5 bg-gray-50 flex flex-col gap-1">
+      {/* Header bar */}
+      <div className="flex items-center justify-between">
+        <div className="h-1.5 rounded-full w-10 bg-gray-200" />
+        <div className="h-4 w-4 rounded-full" style={{ backgroundColor: palette[600] }} />
+      </div>
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 gap-1 flex-1">
+        {[palette[600], palette[500]].map((c, i) => (
+          <div key={i} className="rounded" style={{ backgroundColor: c + (i === 0 ? '' : '30'), height: '100%' }} />
+        ))}
+      </div>
+    </div>
+  </div>
+);
 
 const CenterSettings = () => {
   const [centers, setCenters]       = useState([]);
@@ -28,6 +46,9 @@ const CenterSettings = () => {
   const [saving, setSaving]         = useState(false);
   const [success, setSuccess]       = useState('');
   const [error, setError]           = useState('');
+
+  // Selected theme object (for live preview while picking)
+  const activeTheme = THEMES.find(t => t.value === form.theme);
 
   // Load all centers for SA to pick from
   useEffect(() => {
@@ -50,15 +71,19 @@ const CenterSettings = () => {
         phone:      c.phone      || '',
         email:      c.email      || '',
         website:    c.website    || '',
-        theme:      c.theme      || 'default',
-        themeColor: c.themeColor || '#4F46E5',
+        theme:      c.theme      || 'sneat',
+        themeColor: c.themeColor || '#696CFF',
         latitude:   c.latitude   != null ? String(c.latitude)  : '',
         longitude:  c.longitude  != null ? String(c.longitude) : '',
       });
     });
   }, [selectedId]);
 
-  const pickTheme = (t) => setForm(f => ({ ...f, theme: t.value, themeColor: t.color }));
+  const pickTheme = (t) => {
+    setForm(f => ({ ...f, theme: t.value, themeColor: t.color }));
+    // Live preview while selecting (not saved yet)
+    applyTheme(t.value, t.color);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -104,6 +129,7 @@ const CenterSettings = () => {
       {success && <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">{success}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+
         {/* Basic Info */}
         <Card title="Basic Information">
           <div className="space-y-4">
@@ -126,36 +152,97 @@ const CenterSettings = () => {
           </div>
         </Card>
 
-        {/* Theme */}
+        {/* ── Theme Selector ─────────────────────────────────────────────── */}
         <Card title="Theme & Branding">
-          <p className="text-xs text-gray-500 mb-4">Choose a colour theme for this center's interface.</p>
+          <p className="text-xs text-gray-500 mb-5">
+            Choose a colour theme for this center's interface. Click a theme to preview it live — changes apply to everyone in this center when saved.
+          </p>
+
+          {/* Theme cards grid */}
           <div className="grid grid-cols-5 gap-3">
-            {THEMES.map(t => (
-              <button
-                key={t.value}
-                type="button"
-                onClick={() => pickTheme(t)}
-                className={`p-3 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${form.theme === t.value ? 'border-gray-900 shadow-md' : 'border-transparent hover:border-gray-200'}`}
-              >
-                <div className="w-10 h-10 rounded-full shadow-inner" style={{ backgroundColor: t.color }} />
-                <span className="text-xs font-medium text-gray-700">{t.label}</span>
-                {form.theme === t.value && <span className="text-xs text-gray-500">✓ Active</span>}
-              </button>
-            ))}
+            {THEMES.map(t => {
+              const isActive = form.theme === t.value;
+              return (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => pickTheme(t)}
+                  className={`group relative flex flex-col gap-2 p-2 rounded-xl border-2 transition-all text-left ${
+                    isActive
+                      ? 'shadow-lg ring-2 ring-offset-2'
+                      : 'border-gray-100 hover:border-gray-200 hover:shadow-sm'
+                  }`}
+                  style={isActive ? { borderColor: t.color, ringColor: t.color } : {}}
+                >
+                  {/* Active badge */}
+                  {isActive && (
+                    <span
+                      className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold shadow"
+                      style={{ backgroundColor: t.color }}
+                    >
+                      ✓
+                    </span>
+                  )}
+
+                  {/* Mini UI preview */}
+                  <ThemePreview palette={t.palette} name={t.label} />
+
+                  {/* Color dot + name */}
+                  <div className="flex items-center gap-1.5 px-0.5">
+                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: t.color }} />
+                    <span className="text-xs font-semibold text-gray-800 truncate">{t.label}</span>
+                  </div>
+                  <span className="text-[10px] text-gray-400 px-0.5 leading-tight">{t.tagline}</span>
+                </button>
+              );
+            })}
           </div>
-          <div className="mt-4 flex items-center gap-3">
-            <label className="text-sm font-medium text-gray-700">Custom Colour</label>
-            <input
-              type="color"
-              value={form.themeColor}
-              onChange={e => setForm(f=>({...f,themeColor:e.target.value,theme:'custom'}))}
-              className="h-9 w-16 rounded cursor-pointer border border-gray-200"
-            />
-            <span className="text-sm text-gray-600 font-mono">{form.themeColor}</span>
+
+          {/* Custom colour picker */}
+          <div className="mt-5 pt-4 border-t border-gray-100">
+            <p className="text-xs font-medium text-gray-600 mb-2">Or pick a custom colour</p>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={form.themeColor}
+                onChange={e => {
+                  const hex = e.target.value;
+                  setForm(f => ({ ...f, themeColor: hex, theme: 'custom' }));
+                  applyTheme('custom', hex);
+                }}
+                className="h-10 w-12 rounded-lg cursor-pointer border border-gray-200 p-0.5"
+              />
+              <div>
+                <p className="text-sm font-mono text-gray-700">{form.themeColor}</p>
+                {form.theme === 'custom' && (
+                  <p className="text-xs text-gray-400">Custom theme active</p>
+                )}
+              </div>
+            </div>
           </div>
-          <div className="mt-4 p-4 rounded-xl" style={{ backgroundColor: form.themeColor + '15', borderLeft: `4px solid ${form.themeColor}` }}>
-            <p className="text-sm font-semibold" style={{ color: form.themeColor }}>{form.name || 'Your Center Name'}</p>
-            <p className="text-xs text-gray-500 mt-0.5">Theme preview · SMART ECCD</p>
+
+          {/* Live preview banner */}
+          <div
+            className="mt-4 p-4 rounded-xl flex items-center gap-4 transition-all duration-300"
+            style={{ backgroundColor: form.themeColor + '18', borderLeft: `4px solid ${form.themeColor}` }}
+          >
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-sm flex-shrink-0"
+              style={{ backgroundColor: form.themeColor }}>
+              SE
+            </div>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: form.themeColor }}>
+                {form.name || 'Your Center Name'}
+              </p>
+              <p className="text-xs text-gray-500">
+                {activeTheme ? `${activeTheme.label} theme` : 'Custom theme'} · SMART ECCD preview
+              </p>
+            </div>
+            <div className="ml-auto flex gap-1.5">
+              {[form.themeColor, form.themeColor + '80', form.themeColor + '40'].map((c, i) => (
+                <div key={i} className="w-4 h-4 rounded-full" style={{ backgroundColor: c }} />
+              ))}
+            </div>
           </div>
         </Card>
 

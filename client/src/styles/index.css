@@ -4,11 +4,12 @@
 
 @layer base {
   :root {
-    --color-primary-50:  #eef2ff;
-    --color-primary-100: #e0e7ff;
-    --color-primary-500: #6366f1;
-    --color-primary-600: #4F46E5;
-    --color-primary-700: #4338CA;
+    /* Default: Sneat theme — overridden at runtime via applyTheme() */
+    --color-primary-50:  #F0EEFF;
+    --color-primary-100: #DDDAFE;
+    --color-primary-500: #8D91FF;
+    --color-primary-600: #696CFF;
+    --color-primary-700: #4E51E6;
   }
   * {
     box-sizing: border-box;
