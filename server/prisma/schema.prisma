@@ -172,8 +172,9 @@ model Center {
   email       String?
   website     String?
   logo        String?
-  theme       String?  @default("default")   // default | ocean | forest | sunset | rose
-  themeColor  String?  @default("#4F46E5")   // primary hex colour
+  theme       String?  @default("sneat")     // sneat | materio | breeze | sage | ember | custom
+  themeColor  String?  @default("#696CFF")   // primary hex colour
+  currency    String?  @default("USD")       // USD | AUD | BTN | INR
   latitude    Float?
   longitude   Float?
   managerId   String   @unique

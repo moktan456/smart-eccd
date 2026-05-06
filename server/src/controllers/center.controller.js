@@ -11,8 +11,9 @@ const centerSchema = z.object({
   email:      z.union([z.string().email(), z.literal(''), z.null()]).optional(),
   website:    z.string().optional().nullable(),
   managerId:  z.string().optional(),
-  theme:      z.string().optional().default('default'),
-  themeColor: z.string().optional().default('#4F46E5'),
+  theme:      z.string().optional().default('sneat'),
+  themeColor: z.string().optional().default('#696CFF'),
+  currency:   z.enum(['USD', 'AUD', 'BTN', 'INR']).optional().default('USD'),
   // Accept both number and numeric string from form inputs
   latitude:   z.union([z.number(), z.string().transform(v => v === '' ? null : parseFloat(v)), z.null()]).optional(),
   longitude:  z.union([z.number(), z.string().transform(v => v === '' ? null : parseFloat(v)), z.null()]).optional(),

@@ -5,10 +5,12 @@ import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
 import { THEMES, applyTheme } from '../../utils/themes';
+import { CURRENCIES, saveCenterCurrency } from '../../utils/currency';
 
 const EMPTY_FORM = {
   name: '', address: '', phone: '', email: '', website: '',
   theme: 'sneat', themeColor: '#696CFF',
+  currency: 'USD',
   latitude: '', longitude: '',
 };
 
@@ -73,6 +75,7 @@ const CenterSettings = () => {
         website:    c.website    || '',
         theme:      c.theme      || 'sneat',
         themeColor: c.themeColor || '#696CFF',
+        currency:   c.currency   || 'USD',
         latitude:   c.latitude   != null ? String(c.latitude)  : '',
         longitude:  c.longitude  != null ? String(c.longitude) : '',
       });
@@ -98,6 +101,7 @@ const CenterSettings = () => {
       if (!payload.longitude) delete payload.longitude;
       await centerService.update(selectedId, payload);
       applyTheme(form.theme, form.themeColor);
+      saveCenterCurrency(form.currency);
       setSuccess('Center settings saved successfully.');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save settings.');
@@ -149,6 +153,35 @@ const CenterSettings = () => {
           <div className="grid grid-cols-2 gap-4">
             <Input label="Latitude"  value={form.latitude}  onChange={e => setForm(f=>({...f,latitude:e.target.value}))}  placeholder="e.g. 14.5995" />
             <Input label="Longitude" value={form.longitude} onChange={e => setForm(f=>({...f,longitude:e.target.value}))} placeholder="e.g. 120.9842" />
+          </div>
+        </Card>
+
+        {/* ── Currency ───────────────────────────────────────────────────── */}
+        <Card title="Currency">
+          <p className="text-xs text-gray-500 mb-4">Sets the currency symbol used across fees and financial records for this center.</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {CURRENCIES.map(c => {
+              const isActive = form.currency === c.code;
+              return (
+                <button
+                  key={c.code}
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, currency: c.code }))}
+                  className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${
+                    isActive ? 'shadow-md' : 'border-gray-100 hover:border-gray-200'
+                  }`}
+                  style={isActive ? { borderColor: form.themeColor, backgroundColor: form.themeColor + '10' } : {}}
+                >
+                  <span className="text-2xl">{c.flag}</span>
+                  <span className="text-lg font-bold text-gray-800">{c.symbol}</span>
+                  <span className="text-xs font-semibold text-gray-700">{c.code}</span>
+                  <span className="text-[10px] text-gray-400 text-center leading-tight">{c.label}</span>
+                  {isActive && (
+                    <span className="text-[10px] font-semibold" style={{ color: form.themeColor }}>✓ Selected</span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </Card>
 

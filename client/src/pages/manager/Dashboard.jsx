@@ -6,6 +6,8 @@ import Card, { StatCard } from '../../components/common/Card';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import BloomBarChart from '../../components/charts/BloomBarChart';
 import BloomRadarChart from '../../components/charts/BloomRadarChart';
+import AttendancePieChart from '../../components/charts/AttendancePieChart';
+import BloomPieChart from '../../components/charts/BloomPieChart';
 import Badge from '../../components/common/Badge';
 import { BLOOM_LEVELS, BLOOM_COLORS, BLOOM_LABELS } from '../../utils/constants';
 
@@ -91,9 +93,19 @@ const MgrDashboard = () => {
         </div>
       )}
 
-      {/* Bloom Coverage Chart */}
-      <Card title="Bloom's Taxonomy Activity Coverage">
-        <BloomBarChart coverage={bloomCoverage} />
+      {/* Bloom + Attendance side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card title="Bloom's Taxonomy Coverage">
+          <BloomBarChart coverage={bloomCoverage} />
+        </Card>
+        <Card title="Bloom's Level Distribution">
+          <BloomPieChart coverage={bloomCoverage} />
+        </Card>
+      </div>
+
+      {/* Today's Attendance Pie */}
+      <Card title="Today's Attendance">
+        <AttendancePieChart present={stats?.todayAttendance ?? 0} total={stats?.totalChildren ?? 0} />
       </Card>
 
       {/* Class-level Bloom breakdown */}
@@ -165,27 +177,6 @@ const MgrDashboard = () => {
         </Card>
       </div>
 
-      {/* Today's attendance */}
-      <Card title="Today's Attendance">
-        <div className="flex items-center gap-6">
-          <div className="text-center">
-            <p className="text-3xl font-bold text-green-600">{stats?.todayAttendance ?? 0}</p>
-            <p className="text-xs text-gray-500">Present Today</p>
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-gray-400">{stats?.totalChildren ?? 0}</p>
-            <p className="text-xs text-gray-500">Enrolled</p>
-          </div>
-          {stats?.totalChildren > 0 && (
-            <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-green-500 rounded-full transition-all"
-                style={{ width: `${Math.round((stats.todayAttendance / stats.totalChildren) * 100)}%` }}
-              />
-            </div>
-          )}
-        </div>
-      </Card>
     </div>
   );
 };

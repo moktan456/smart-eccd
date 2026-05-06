@@ -5,6 +5,8 @@ import { performanceService } from '../../services/performance.service';
 import Card, { StatCard } from '../../components/common/Card';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import BloomRadarChart from '../../components/charts/BloomRadarChart';
+import ActivityStatusBarChart from '../../components/charts/ActivityStatusBarChart';
+import AttendanceGauge from '../../components/charts/AttendanceGauge';
 import Button from '../../components/common/Button';
 import { BloomBadge } from '../../components/common/Badge';
 import { BLOOM_LEVELS, BLOOM_COLORS, BLOOM_LABELS } from '../../utils/constants';
@@ -65,6 +67,21 @@ const TeacherDashboard = () => {
       <div className="grid grid-cols-2 gap-4">
         <StatCard label="Class Size"         value={data?.classInfo?._count?.children ?? '—'} icon="👶" />
         <StatCard label="Pending Activities" value={data?.pendingCount ?? 0}                  icon="📋" />
+      </div>
+
+      {/* Charts row: Activity status bar + Attendance gauge */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card title="Activity Status Breakdown">
+          <ActivityStatusBarChart assignments={data?.todayAssignments || []} />
+        </Card>
+        <Card title="Class Attendance Today">
+          <div className="flex justify-center py-2">
+            <AttendanceGauge
+              present={data?.todayAttendance ?? 0}
+              total={data?.classInfo?._count?.children ?? 0}
+            />
+          </div>
+        </Card>
       </div>
 
       <Card title="Today's Schedule">

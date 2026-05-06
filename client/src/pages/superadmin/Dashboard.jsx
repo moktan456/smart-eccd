@@ -3,6 +3,8 @@ import { dashboardService } from '../../services/dashboard.service';
 import Card, { StatCard } from '../../components/common/Card';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import BloomBarChart from '../../components/charts/BloomBarChart';
+import CentersBarChart from '../../components/charts/CentersBarChart';
+import BloomPieChart from '../../components/charts/BloomPieChart';
 import { BLOOM_LEVELS, BLOOM_COLORS, BLOOM_LABELS } from '../../utils/constants';
 
 // Radial gauge for a single Bloom level %
@@ -86,12 +88,22 @@ const SaDashboard = () => {
         </p>
       </Card>
 
-      {/* Bloom bar chart full */}
-      <Card title="Bloom's Activity Distribution (all centers)">
-        <BloomBarChart coverage={Object.fromEntries(BLOOM_LEVELS.map(l => [l, { percentage: avgBloom[l] || 0, isUnderUtilised: (avgBloom[l]||0) < 10 }]))} />
+      {/* Two-column: Bar chart + Pie chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card title="Bloom's Activity Distribution">
+          <BloomBarChart coverage={Object.fromEntries(BLOOM_LEVELS.map(l => [l, { percentage: avgBloom[l] || 0, isUnderUtilised: (avgBloom[l]||0) < 10 }]))} />
+        </Card>
+        <Card title="Bloom's Level Breakdown (Pie)">
+          <BloomPieChart coverage={Object.fromEntries(BLOOM_LEVELS.map(l => [l, avgBloom[l] || 0]))} />
+        </Card>
+      </div>
+
+      {/* Centers enrollment bar chart */}
+      <Card title="Centers — Enrollment Comparison">
+        <CentersBarChart centers={stats?.centers || []} />
       </Card>
 
-      {/* Centers overview */}
+      {/* Centers overview table */}
       <Card title="Centers Overview">
         <div className="space-y-3">
           {(stats?.centers || []).map(c => (

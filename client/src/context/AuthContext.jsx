@@ -6,6 +6,7 @@ import useAuthStore from '../store/authStore';
 import useNotificationStore from '../store/notificationStore';
 import { centerService } from '../services/center.service';
 import { applyTheme } from '../utils/themes';
+import { saveCenterCurrency } from '../utils/currency';
 
 // In production, socket connects to the Render backend. In dev, use Vite proxy (same origin '/').
 const SOCKET_URL = import.meta.env.VITE_API_URL || '/';
@@ -32,6 +33,9 @@ export const AuthProvider = ({ children }) => {
         const center = data.data;
         if (center?.theme || center?.themeColor) {
           applyTheme(center.theme, center.themeColor);
+        }
+        if (center?.currency) {
+          saveCenterCurrency(center.currency);
         }
       })
       .catch(() => {}); // silently ignore — default theme stays
