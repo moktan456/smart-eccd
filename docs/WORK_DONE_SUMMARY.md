@@ -75,8 +75,34 @@ Themes (selectable by SuperAdmin in `/sa/settings`):
 
 ---
 
+### 9. Currency Selection + MUI X Charts (`a703052`)
+**Currency:**
+- `currency String? @default("USD")` added to Center model, DB pushed
+- `server/src/controllers/center.controller.js` — accepts `currency` enum (USD|AUD|BTN|INR)
+- `client/src/utils/currency.js` — `CURRENCIES`, `formatCurrency()`, `saveCenterCurrency()`, `getCenterCurrency()`
+- `client/src/context/AuthContext.jsx` — calls `saveCenterCurrency()` on login
+- `client/src/pages/superadmin/CenterSettings.jsx` — flag+symbol currency picker (4 cards: 🇺🇸$, 🇦🇺A$, 🇧🇹Nu., 🇮🇳₹)
+
+**MUI X Charts installed:** `@mui/x-charts @mui/material @emotion/react @emotion/styled`
+
+**New chart components:**
+| Component | Chart Type | Used In |
+|-----------|-----------|---------|
+| `CentersBarChart.jsx` | BarChart | SA Dashboard — children+classes per center |
+| `BloomPieChart.jsx` | PieChart | SA + Manager Dashboard — Bloom level breakdown |
+| `AttendancePieChart.jsx` | PieChart | Manager Dashboard — present vs absent donut |
+| `ActivityStatusBarChart.jsx` | BarChart | Teacher Dashboard — activity status counts |
+| `AttendanceGauge.jsx` | Gauge | Teacher Dashboard — attendance % arc gauge |
+
+**Dashboard updates:**
+- SA Dashboard: added `CentersBarChart` + `BloomPieChart` alongside existing bar chart
+- Manager Dashboard: added `BloomPieChart` + `AttendancePieChart` (replaced old attendance bar)
+- Teacher Dashboard: added `ActivityStatusBarChart` + `AttendanceGauge` row above schedule
+
+---
+
 ## Pending / Not Yet Done
-- Nothing currently pending from the two completed tasks
+- Nothing currently pending
 - If new requests come in, check this file first to avoid re-doing completed work
 
 ---
