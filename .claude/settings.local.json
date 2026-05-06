@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const m = require\\('./server/src/middleware/rbac.middleware'\\); console.log\\('CENTER_MANAGER activity:write:', m.PERMISSIONS.CENTER_MANAGER.includes\\('activity:write'\\)\\); console.log\\('TEACHER activity:write:', m.PERMISSIONS.TEACHER.includes\\('activity:write'\\)\\); console.log\\('CENTER_MANAGER notification:write:', m.PERMISSIONS.CENTER_MANAGER.includes\\('notification:write'\\)\\);\")",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "WebFetch(domain:themeselection.com)",
+      "WebFetch(domain:demos.themeselection.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:dribbble.com)"
+    ]
+  }
+}
