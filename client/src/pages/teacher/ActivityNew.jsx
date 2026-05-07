@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { activityService } from '../../services/activity.service';
+import api from '../../services/api';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
@@ -16,6 +17,14 @@ const TeacherActivityNew = () => {
     bloomLevels: [], activityType: 'Group', ageGroup: '',
     durationMins: 30, learningGoals: [''], status: 'PUBLISHED',
   });
+
+  // Auto-populate ageGroup from the teacher's assigned class
+  useEffect(() => {
+    api.get('/classes').then(({ data }) => {
+      const cls = data.data?.[0];
+      if (cls?.ageGroup) setForm(f => ({ ...f, ageGroup: cls.ageGroup }));
+    }).catch(() => {});
+  }, []);
 
   const toggleBloom = (level) => {
     setForm(f => ({
@@ -34,9 +43,19 @@ const TeacherActivityNew = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (form.bloomLevels.length === 0) {
+      setError('Please select at least one Bloom\'s Taxonomy level.');
+      return;
+    }
+    const goals = form.learningGoals.filter(Boolean);
+    if (goals.length === 0) {
+      setError('Please add at least one learning goal.');
+      return;
+    }
     setLoading(true);
+    setError('');
     try {
-      const data = { ...form, learningGoals: form.learningGoals.filter(Boolean) };
+      const data = { ...form, learningGoals: goals };
       await activityService.create(data);
       navigate('/teacher/activities');
     } catch (err) {
@@ -63,7 +82,13 @@ const TeacherActivityNew = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Select label="Activity Type" value={form.activityType} onChange={e => setForm(f=>({...f,activityType:e.target.value}))} options={ACTIVITY_TYPES} />
-              <Input label="Age Group" value={form.ageGroup} onChange={e => setForm(f=>({...f,ageGroup:e.target.value}))} placeholder="e.g. 4-5 years" required />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Age Group</label>
+                <div className="form-input bg-gray-50 text-gray-700 select-none">
+                  {form.ageGroup || <span className="text-gray-400">Auto-filled from your class</span>}
+                </div>
+                <p className="mt-1 text-xs text-gray-400">Derived from your assigned class</p>
+              </div>
             </div>
             <Input label="Duration (minutes)" type="number" value={form.durationMins} onChange={e => setForm(f=>({...f,durationMins:Number(e.target.value)}))} min={5} max={180} required />
           </div>

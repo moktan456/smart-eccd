@@ -67,6 +67,10 @@ enum NotificationType {
   FEE_REMINDER
   LEAVE_APPROVED
   LEAVE_REJECTED
+  GENERAL
+  EVENT
+  ATTENDANCE
+  SCHOOL_NOTICE
 }
 
 enum MessageStatus {

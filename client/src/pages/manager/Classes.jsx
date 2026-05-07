@@ -9,11 +9,12 @@ import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
 import Badge from '../../components/common/Badge';
 
-const EMPTY_FORM = { name: '', ageGroup: '', teacherId: '' };
+const EMPTY_FORM = { name: '', ageGroup: '', teacherId: '', classroomId: '' };
 
 const MgrClasses = () => {
   const [classes, setClasses] = useState([]);
   const [teachers, setTeachers] = useState([]);
+  const [classrooms, setClassrooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editClass, setEditClass] = useState(null);
@@ -32,11 +33,19 @@ const MgrClasses = () => {
   useEffect(() => {
     userService.list({ role: 'TEACHER', limit: 100 })
       .then(({ data }) => setTeachers(data.data));
+    api.get('/classrooms')
+      .then(({ data }) => setClassrooms(data.data))
+      .catch(() => {});
   }, []);
 
   const teacherOptions = [
     { value: '', label: '— Select Teacher —' },
     ...teachers.map(t => ({ value: t.id, label: t.name })),
+  ];
+
+  const classroomOptions = [
+    { value: '', label: '— No Classroom —' },
+    ...classrooms.map(r => ({ value: r.id, label: r.name })),
   ];
 
   const openCreate = () => {
@@ -48,7 +57,7 @@ const MgrClasses = () => {
 
   const openEdit = (cls) => {
     setEditClass(cls);
-    setForm({ name: cls.name, ageGroup: cls.ageGroup, teacherId: cls.teacher?.id || '' });
+    setForm({ name: cls.name, ageGroup: cls.ageGroup, teacherId: cls.teacher?.id || '', classroomId: cls.classroom?.id || '' });
     setError('');
     setShowModal(true);
   };
@@ -58,10 +67,12 @@ const MgrClasses = () => {
     setSaving(true);
     setError('');
     try {
+      const payload = { ...form };
+      if (!payload.classroomId) delete payload.classroomId;
       if (editClass) {
-        await api.put(`/classes/${editClass.id}`, form);
+        await api.put(`/classes/${editClass.id}`, payload);
       } else {
-        await api.post('/classes', form);
+        await api.post('/classes', payload);
       }
       setShowModal(false);
       load();
@@ -84,6 +95,12 @@ const MgrClasses = () => {
       render: r => <span className="font-medium text-sm">{r.name}</span>,
     },
     { key: 'ageGroup', label: 'Age Group' },
+    {
+      key: 'classroom', label: 'Room',
+      render: r => r.classroom
+        ? <span className="text-sm">{r.classroom.name}</span>
+        : <span className="text-gray-400 text-sm">—</span>,
+    },
     {
       key: 'teacher', label: 'Teacher',
       render: r => r.teacher ? (
@@ -160,6 +177,12 @@ const MgrClasses = () => {
           {teachers.length === 0 && (
             <p className="text-xs text-amber-600">No teachers found. Create teacher accounts first.</p>
           )}
+          <Select
+            label="Assign Classroom (optional)"
+            value={form.classroomId}
+            onChange={e => setForm(f => ({ ...f, classroomId: e.target.value }))}
+            options={classroomOptions}
+          />
         </form>
       </Modal>
 

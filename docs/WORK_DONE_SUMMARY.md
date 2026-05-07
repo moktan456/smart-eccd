@@ -101,6 +101,41 @@ Themes (selectable by SuperAdmin in `/sa/settings`):
 
 ---
 
+### 10. ActivityNew Error Fixed + Parent Dashboard Charts
+
+**Bug fix — `server/src/controllers/activity.controller.js`**
+- `createActivity` was resolving `centerId` only for `CENTER_MANAGER`; TEACHER fell through to `req.body.centerId` (undefined)
+- Fix: `const centerId = req.user.centerId || req.body.centerId;` — works for all roles that have centerId in JWT
+
+**Parent Dashboard — `client/src/pages/parent/Dashboard.jsx`**
+- Replaced plain text attendance summary (PRESENT/ABSENT/LATE/EXCUSED as bold numbers) with MUI X PieChart donut
+  - 4-color donut: green = Present, red = Absent, yellow = Late, blue = Excused
+  - Inline legend with color dots + counts
+  - Shows attendance rate % as large callout
+- Added `BloomPieChart` below the Bloom ring gauges inside the "Bloom's Taxonomy Profile" card
+  - Gives parents a visual distribution of which cognitive levels the child engages most
+
+---
+
+### 11. Three Bug Fixes
+
+**1. Teacher activity creation (backend + frontend)**
+- `server/src/middleware/errorHandler.js` — added Zod error handling so validation failures return HTTP 400 with readable field-level messages instead of 500
+- `client/src/pages/teacher/ActivityNew.jsx` — added frontend guard: submit blocked if no Bloom level selected or all goals empty, with clear error message
+- `ActivityNew.jsx` — added `useEffect` to auto-call `GET /classes` on mount and pre-fill `ageGroup` from the teacher's first class (no manual typing needed)
+- `ActivityNew.jsx` — replaced free-text `ageGroup` Input with a read-only display (derived from class, not editable)
+
+**2. Age group auto-fill (teacher create activity)**
+- Fetches teacher's assigned class on form mount and sets `form.ageGroup` from `class.ageGroup`
+- Shown as read-only "Derived from your assigned class" to prevent mismatch
+
+**3. SA currency — added to center creation/edit form (`client/src/pages/superadmin/Centers.jsx`)**
+- `EMPTY_FORM` now includes `currency: 'USD'`
+- `openEdit` populates `form.currency` from `center.currency`
+- Modal form has a `Select` with all 4 currencies (flag + code + label)
+- `handleSubmit` calls `saveCenterCurrency()` after successful save
+- Centers table now shows a `Currency` column
+
 ## Pending / Not Yet Done
 - Nothing currently pending
 - If new requests come in, check this file first to avoid re-doing completed work

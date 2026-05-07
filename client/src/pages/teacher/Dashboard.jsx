@@ -114,7 +114,7 @@ const TeacherDashboard = () => {
         </Card>
       )}
 
-      {classPerf?.children?.length > 0 && (
+      {classPerf?.children?.length > 0 ? (
         <Card title="Student-Level Bloom Heatmap">
           <div className="flex flex-wrap gap-3 mb-3">
             {BLOOM_LEVELS.map(l => (
@@ -131,7 +131,21 @@ const TeacherDashboard = () => {
           </div>
           <p className="text-xs text-gray-400 mt-3">Darker bar = stronger performance. Red border = below class average.</p>
         </Card>
-      )}
+      ) : data?.classInfo?.children?.length > 0 ? (
+        <Card title={`Students in ${data.classInfo.name || 'My Class'}`}>
+          <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+            {data.classInfo.children.map(child => (
+              <div key={child.id} className="flex items-center gap-3 p-2.5 rounded-xl border border-gray-100">
+                <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 text-xs font-bold flex-shrink-0">
+                  {child.firstName.charAt(0)}
+                </div>
+                <span className="text-sm font-medium text-gray-800">{child.firstName} {child.lastName}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-400 mt-3">No performance data yet. Conduct activities to see Bloom's scores.</p>
+        </Card>
+      ) : null}
     </div>
   );
 };

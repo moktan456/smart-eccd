@@ -11,16 +11,14 @@ import Select from '../../components/common/Select';
 import { ROLE_LABELS } from '../../utils/constants';
 
 const ROLE_FILTER_OPTIONS = [
-  { value: '',               label: 'All Roles' },
+  { value: '',               label: 'All' },
   { value: 'SUPER_ADMIN',   label: 'Super Admin' },
   { value: 'CENTER_MANAGER', label: 'Center Manager' },
-  { value: 'PARENT',        label: 'Parent' },
 ];
 
+// SA only creates Center Managers — parents & teachers are managed by the Manager
 const ROLE_CREATE_OPTIONS = [
   { value: 'CENTER_MANAGER', label: 'Center Manager' },
-  { value: 'SUPER_ADMIN',   label: 'Super Admin' },
-  { value: 'PARENT',        label: 'Parent' },
 ];
 
 const roleColor = {
@@ -112,7 +110,7 @@ const SaUsers = () => {
     setUsers(u => u.map(x => x.id === user.id ? { ...x, isActive: !x.isActive } : x));
   };
 
-  const needsCenter = ['CENTER_MANAGER', 'TEACHER', 'PARENT'].includes(form.role);
+  const needsCenter = form.role === 'CENTER_MANAGER';
 
   const columns = [
     {

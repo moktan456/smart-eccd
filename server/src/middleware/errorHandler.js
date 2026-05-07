@@ -5,6 +5,14 @@ const { Prisma } = require('@prisma/client');
 const errorHandler = (err, req, res, next) => {
   console.error(`[Error] ${req.method} ${req.path}:`, err.message);
 
+  // Zod validation errors
+  if (err.name === 'ZodError') {
+    return res.status(400).json({
+      success: false,
+      message: err.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('; '),
+    });
+  }
+
   // Prisma unique constraint violation
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
     if (err.code === 'P2002') {

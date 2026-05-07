@@ -112,8 +112,12 @@ const SaDashboard = () => {
                 <div>
                   <p className="font-semibold text-sm text-gray-900">{c.name}</p>
                   <p className="text-xs text-gray-500">{c._count?.children ?? 0} children · {c._count?.classes ?? 0} classes</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{c.address}</p>
                 </div>
-                <span className="text-xs text-gray-400">{c.address}</span>
+                <div className="text-right flex flex-col gap-1">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium">{c.currency || 'USD'}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-500 capitalize">{c.theme || 'sneat'}</span>
+                </div>
               </div>
             </div>
           ))}

@@ -9,6 +9,7 @@ const classSchema = z.object({
   ageGroup: z.string().min(1),
   teacherId: z.string(),
   centerId: z.string().optional(),
+  classroomId: z.string().optional(),
 });
 
 /**
@@ -24,8 +25,9 @@ const listClasses = async (req, res, next) => {
       prisma.class.findMany({
         where,
         include: {
-          teacher: { select: { id: true, name: true, email: true } },
-          _count: { select: { children: true } },
+          teacher:   { select: { id: true, name: true, email: true } },
+          classroom: { select: { id: true, name: true } },
+          _count:    { select: { children: true } },
         },
         orderBy: { createdAt: 'desc' },
         ...paginate(page, limit),

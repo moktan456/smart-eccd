@@ -12,16 +12,16 @@ const PERMISSIONS = {
     'child:read',  'child:write',
     'user:read',   'user:write',
     'report:read', 'report:write',
-    'attendance:read',
-    'performance:read',
+    'attendance:read', 'attendance:write',
+    'performance:read', 'performance:write',
     'message:read', 'message:write',
     'announcement:write',
     'notification:read', 'notification:write',
     'fee:read',    'fee:write',
     'leave:read',  'leave:write',
     'calendar:read', 'calendar:write',
-    // activity:read only — activity creation/assignment is Teacher's domain
-    'activity:read',
+    // Full activity ownership — CM is head of center, has all teacher privileges
+    'activity:read', 'activity:write', 'activity:conduct',
   ],
   TEACHER: [
     // Full activity ownership: create, edit, assign, conduct, record

@@ -3,6 +3,7 @@
 const { z } = require('zod');
 const prisma = require('../config/db');
 const { paginate, paginatedResponse } = require('../utils/helpers');
+const { getLocalFileUrl, UPLOAD_PROVIDER } = require('../config/storage');
 
 const activitySchema = z.object({
   title: z.string().min(3),
@@ -10,7 +11,7 @@ const activitySchema = z.object({
   instructions: z.string().min(10),
   bloomLevels: z.array(z.enum(['REMEMBER', 'UNDERSTAND', 'APPLY', 'ANALYZE', 'EVALUATE', 'CREATE'])).min(1),
   activityType: z.enum(['Individual', 'Group', 'Outdoor', 'Creative']),
-  ageGroup: z.string().min(1),
+  ageGroup: z.string().optional(),
   durationMins: z.number().int().positive(),
   resources: z.array(z.string()).optional().default([]),
   learningGoals: z.array(z.string()).min(1),
@@ -108,7 +109,7 @@ const getActivityById = async (req, res, next) => {
 const createActivity = async (req, res, next) => {
   try {
     const data = activitySchema.parse(req.body);
-    const centerId = req.user.role === 'CENTER_MANAGER' ? req.user.centerId : req.body.centerId;
+    const centerId = req.user.centerId || req.body.centerId;
 
     const activity = await prisma.activity.create({
       data: { ...data, centerId, createdById: req.user.id },
@@ -264,6 +265,22 @@ const flagUnderperformers = async (tx, performances, recordId) => {
   }
 };
 
+/**
+ * POST /api/activities/upload-evidence – Teacher | CM
+ * Accepts a single image file (max 1 MB). Returns the URL.
+ */
+const uploadActivityEvidence = async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: 'No image file received.' });
+    const url = UPLOAD_PROVIDER === 'local'
+      ? getLocalFileUrl(req, req.file.path)
+      : req.file.path; // Cloudinary returns the full secure URL
+    res.json({ success: true, url });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   listActivities,
   getActivityById,
@@ -273,4 +290,5 @@ module.exports = {
   assignActivity,
   getMyAssignments,
   conductActivity,
+  uploadActivityEvidence,
 };

@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { PieChart } from '@mui/x-charts/PieChart';
 import { dashboardService } from '../../services/dashboard.service';
 import api from '../../services/api';
 import Card, { StatCard } from '../../components/common/Card';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import BloomRadarChart from '../../components/charts/BloomRadarChart';
+import BloomPieChart from '../../components/charts/BloomPieChart';
 import TrendLineChart from '../../components/charts/TrendLineChart';
 import Badge, { BloomBadge } from '../../components/common/Badge';
 import { formatDate } from '../../utils/helpers';
 import { BLOOM_LEVELS, BLOOM_COLORS, BLOOM_LABELS } from '../../utils/constants';
+
+const ATTENDANCE_COLORS = { PRESENT: '#22c55e', ABSENT: '#f87171', LATE: '#fbbf24', EXCUSED: '#60a5fa' };
 
 // Score card for a Bloom level
 const BloomScoreCard = ({ level, score }) => {
@@ -104,16 +108,17 @@ const ParentDashboard = () => {
             </div>
           </div>
 
-          {/* Bloom gauges – MSP highlight */}
+          {/* Bloom gauges + distribution pie */}
           <Card title="Bloom's Taxonomy Profile">
             <div className="flex flex-wrap justify-around gap-3 py-2">
               {BLOOM_LEVELS.map(l => (
                 <BloomScoreCard key={l} level={l} score={dashData.bloomProfile?.[l] ?? 0} />
               ))}
             </div>
-            <p className="text-xs text-gray-400 text-center mt-3">
+            <p className="text-xs text-gray-400 text-center mt-1 mb-4">
               Each ring shows how strongly your child demonstrates that cognitive skill (0–100%).
             </p>
+            <BloomPieChart coverage={dashData.bloomProfile || {}} />
           </Card>
 
           {/* Trend */}
@@ -130,17 +135,37 @@ const ParentDashboard = () => {
 
           {/* Attendance this month */}
           <Card title="Attendance This Month">
-            <div className="flex gap-6 flex-wrap">
-              {dashData.attendanceSummary?.map(s => {
-                const colors = { PRESENT: 'text-green-600', ABSENT: 'text-red-600', LATE: 'text-yellow-600', EXCUSED: 'text-blue-600' };
-                return (
-                  <div key={s.status} className="text-center">
-                    <p className={`text-3xl font-bold ${colors[s.status] || 'text-gray-700'}`}>{s._count}</p>
-                    <p className="text-xs text-gray-500">{s.status}</p>
+            {(() => {
+              const summary = dashData.attendanceSummary || [];
+              const total = summary.reduce((s, r) => s + r._count, 0);
+              const presentCount = summary.find(s => s.status === 'PRESENT')?._count || 0;
+              const pct = total > 0 ? Math.round((presentCount / total) * 100) : 0;
+              const pieData = summary.filter(s => s._count > 0).map((s, i) => ({
+                id: i, value: s._count,
+                label: s.status.charAt(0) + s.status.slice(1).toLowerCase(),
+                color: ATTENDANCE_COLORS[s.status] || '#9ca3af',
+              }));
+              return total > 0 ? (
+                <div className="flex items-center gap-6">
+                  <PieChart
+                    series={[{ data: pieData, innerRadius: 48, outerRadius: 80, paddingAngle: 2, cornerRadius: 4, cx: 90 }]}
+                    width={195}
+                    height={180}
+                    slotProps={{ legend: { hidden: true } }}
+                  />
+                  <div>
+                    <p className="text-4xl font-bold text-gray-900">{pct}%</p>
+                    <p className="text-sm text-gray-500 mb-3">attendance rate</p>
+                    {summary.map(s => (
+                      <div key={s.status} className="flex items-center gap-2 text-xs mb-1.5">
+                        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: ATTENDANCE_COLORS[s.status] || '#9ca3af' }} />
+                        <span className="text-gray-600">{s.status}: <strong>{s._count}</strong></span>
+                      </div>
+                    ))}
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              ) : <p className="text-sm text-gray-400 text-center py-6">No attendance records this month.</p>;
+            })()}
           </Card>
 
           {/* Fee status */}

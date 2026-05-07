@@ -29,7 +29,7 @@ const Register = () => {
     setLookupLoading(true);
     setLookupError('');
     try {
-      const { data } = await api.get('/auth/verify-student', { params: { studentId } });
+      const { data } = await api.get(`/auth/verify-student/${studentId}`);
       setChild(data.data);
       setStep('register');
     } catch (err) {

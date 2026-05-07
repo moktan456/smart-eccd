@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 import useAuthStore from '../store/authStore';
 import useNotificationStore from '../store/notificationStore';
 import { centerService } from '../services/center.service';
-import { applyTheme } from '../utils/themes';
+import { applyTheme, restoreTheme } from '../utils/themes';
 import { saveCenterCurrency } from '../utils/currency';
 
 // In production, socket connects to the Render backend. In dev, use Vite proxy (same origin '/').
@@ -16,6 +16,9 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const { user, accessToken, fetchUser } = useAuthStore();
   const { addNotification, fetch: fetchNotifications } = useNotificationStore();
+
+  // Restore saved theme immediately on mount (prevents flash of default colors)
+  useEffect(() => { restoreTheme(); }, []); // eslint-disable-line
 
   // Load user on mount if token exists
   useEffect(() => {

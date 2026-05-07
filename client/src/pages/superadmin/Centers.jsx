@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { centerService } from '../../services/center.service';
 import { userService } from '../../services/user.service';
+import { CURRENCIES, saveCenterCurrency } from '../../utils/currency';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Table from '../../components/common/Table';
@@ -9,7 +10,8 @@ import Modal from '../../components/common/Modal';
 import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
 
-const EMPTY_FORM = { name: '', address: '', phone: '', email: '', managerId: '' };
+const CURRENCY_OPTIONS = CURRENCIES.map(c => ({ value: c.code, label: `${c.flag} ${c.code} – ${c.label}` }));
+const EMPTY_FORM = { name: '', address: '', phone: '', email: '', managerId: '', currency: 'USD' };
 
 const SaCenters = () => {
   const [centers, setCenters] = useState([]);
@@ -57,6 +59,7 @@ const SaCenters = () => {
       phone: center.phone || '',
       email: center.email || '',
       managerId: center.manager?.id || '',
+      currency: center.currency || 'USD',
     });
     setError('');
     setShowModal(true);
@@ -77,6 +80,7 @@ const SaCenters = () => {
       } else {
         await centerService.create(payload);
       }
+      if (payload.currency) saveCenterCurrency(payload.currency);
       setShowModal(false);
       load();
     } catch (err) {
@@ -103,6 +107,7 @@ const SaCenters = () => {
       ),
     },
     { key: 'manager', label: 'Manager', render: r => r.manager?.name || <span className="text-gray-400 text-sm">— Unassigned —</span> },
+    { key: 'currency', label: 'Currency', render: r => <span className="text-xs font-medium text-gray-600">{r.currency || 'USD'}</span> },
     {
       key: '_count', label: 'Stats',
       render: r => (
@@ -196,6 +201,12 @@ const SaCenters = () => {
           {managers.length === 0 && (
             <p className="text-xs text-amber-600">No Center Manager accounts yet. Create one in Users first.</p>
           )}
+          <Select
+            label="Currency"
+            value={form.currency}
+            onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}
+            options={CURRENCY_OPTIONS}
+          />
         </form>
       </Modal>
 

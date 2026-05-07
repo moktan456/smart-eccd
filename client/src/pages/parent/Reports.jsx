@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { dashboardService } from '../../services/dashboard.service';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
@@ -26,10 +29,10 @@ const ParentReports = () => {
     if (!selectedChild) return;
     setLoading(true);
     Promise.all([
-      api.get(`/performance/child/${selectedChild.id}`),
+      dashboardService.getParentDashboard(selectedChild.id),
       api.get(`/attendance?childId=${selectedChild.id}&limit=30`).catch(() => ({ data: { data: [] } })),
-    ]).then(([perf, att]) => {
-      setDashData(perf.data.data);
+    ]).then(([dash, att]) => {
+      setDashData(dash.data.data);
       setAttendance(att.data.data);
     }).finally(() => setLoading(false));
   }, [selectedChild?.id]);
@@ -40,6 +43,33 @@ const ParentReports = () => {
       window.print();
       setPrinting(false);
     }, 300);
+  };
+
+  const handleDownloadPDF = async () => {
+    const el = document.getElementById('print-report');
+    if (!el) return;
+    setPrinting(true);
+    try {
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const imgW = pageW;
+      const imgH = (canvas.height * imgW) / canvas.width;
+      let yPos = 0;
+      let remaining = imgH;
+      while (remaining > 0) {
+        pdf.addImage(imgData, 'PNG', 0, -yPos, imgW, imgH);
+        remaining -= pageH;
+        yPos += pageH;
+        if (remaining > 0) pdf.addPage();
+      }
+      const filename = `${selectedChild?.firstName || 'report'}_progress_report.pdf`;
+      pdf.save(filename);
+    } finally {
+      setPrinting(false);
+    }
   };
 
   const attendanceSummary = attendance.reduce((acc, a) => {
@@ -73,7 +103,8 @@ const ParentReports = () => {
               ))}
             </div>
           )}
-          <Button onClick={handlePrint} loading={printing}>🖨️ Print Report</Button>
+          <Button variant="secondary" onClick={handlePrint} loading={printing}>🖨️ Print</Button>
+          <Button onClick={handleDownloadPDF} loading={printing}>⬇️ Download PDF</Button>
         </div>
       </div>
 
@@ -151,25 +182,24 @@ const ParentReports = () => {
             </div>
           </Card>
 
-          {/* Recent Activities */}
-          {dashData.recentActivities?.length > 0 && (
-            <Card title="Recent Activities">
+          {/* Recent Performances */}
+          {dashData.recentPerformances?.length > 0 && (
+            <Card title="Recent Activity Performances">
               <div className="space-y-2">
-                {dashData.recentActivities.slice(0, 8).map(a => (
-                  <div key={a.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                    <div>
-                      <p className="text-sm font-medium">{a.activity?.title}</p>
-                      <p className="text-xs text-gray-500">{formatDate(a.conductedDate || a.scheduledDate)}</p>
+                {dashData.recentPerformances.slice(0, 8).map(p => {
+                  const activity = p.record?.assignment?.activity;
+                  return (
+                    <div key={p.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                      <div>
+                        <p className="text-sm font-medium">{activity?.title || '—'}</p>
+                        <p className="text-xs text-gray-500">{formatDate(p.record?.conductedDate)}</p>
+                      </div>
+                      <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: BLOOM_COLORS[p.bloomLevelAchieved] + '20', color: BLOOM_COLORS[p.bloomLevelAchieved] }}>
+                        {BLOOM_LABELS[p.bloomLevelAchieved] || p.bloomLevelAchieved}
+                      </span>
                     </div>
-                    <div className="flex gap-1 flex-wrap justify-end max-w-[200px]">
-                      {a.activity?.bloomLevels?.map(l => (
-                        <span key={l} className="text-xs px-1.5 py-0.5 rounded-full font-medium" style={{ backgroundColor: BLOOM_COLORS[l] + '20', color: BLOOM_COLORS[l] }}>
-                          {BLOOM_LABELS[l]}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </Card>
           )}

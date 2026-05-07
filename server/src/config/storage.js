@@ -9,7 +9,8 @@ const UPLOAD_PROVIDER = process.env.UPLOAD_PROVIDER || 'local';
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 const ALLOWED_DOC_TYPES = ['application/pdf'];
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB – general
+const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB – activity evidence images
 
 // ── Local Storage ────────────────────────────────────────────
 const localUploadDir = path.join(__dirname, '../../uploads');
@@ -65,6 +66,18 @@ const upload = multer({
   limits: { fileSize: MAX_FILE_SIZE },
 });
 
+// Image-only upload with 1 MB limit — used for activity evidence photos
+const imageOnlyFilter = (req, file, cb) => {
+  if (ALLOWED_IMAGE_TYPES.includes(file.mimetype)) cb(null, true);
+  else cb(new Error('Only JPEG, PNG, WebP or GIF images are allowed.'), false);
+};
+
+const uploadImage = multer({
+  storage: UPLOAD_PROVIDER === 'cloudinary' ? cloudinaryStorage : localStorage,
+  fileFilter: imageOnlyFilter,
+  limits: { fileSize: MAX_IMAGE_SIZE },
+});
+
 /**
  * Get the public URL for a locally uploaded file
  */
@@ -73,4 +86,4 @@ const getLocalFileUrl = (req, filePath) => {
   return `${req.protocol}://${req.get('host')}/uploads${relativePath}`;
 };
 
-module.exports = { upload, getLocalFileUrl, UPLOAD_PROVIDER };
+module.exports = { upload, uploadImage, getLocalFileUrl, UPLOAD_PROVIDER };

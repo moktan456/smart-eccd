@@ -69,16 +69,25 @@ const getTeacherToday = async (req, res, next) => {
       }),
       prisma.class.findFirst({
         where: { teacherId: req.user.id, isActive: true },
-        include: { _count: { select: { children: true } } },
+        include: {
+          _count: { select: { children: true } },
+          children: { where: { isActive: true }, select: { id: true, firstName: true, lastName: true, photo: true } },
+        },
       }),
       prisma.activityAssignment.count({
         where: { teacherId: req.user.id, status: 'PENDING' },
       }),
     ]);
 
+    const todayAttendance = classInfo
+      ? await prisma.attendance.count({
+          where: { date: { gte: today, lt: tomorrow }, status: 'PRESENT', child: { classId: classInfo.id } },
+        })
+      : 0;
+
     res.json({
       success: true,
-      data: { todayAssignments, classInfo, pendingCount },
+      data: { todayAssignments, classInfo, pendingCount, todayAttendance },
     });
   } catch (err) {
     next(err);

@@ -138,6 +138,25 @@ export function applyTheme(themeName, themeColor) {
   root.style.setProperty('--color-primary-500', palette[500]);
   root.style.setProperty('--color-primary-600', palette[600]);
   root.style.setProperty('--color-primary-700', palette[700]);
+  try {
+    localStorage.setItem('smart-eccd-theme', JSON.stringify({ themeName, themeColor }));
+  } catch (_) {}
+}
+
+export function restoreTheme() {
+  try {
+    const saved = localStorage.getItem('smart-eccd-theme');
+    if (saved) {
+      const { themeName, themeColor } = JSON.parse(saved);
+      const palette = resolvePalette(themeName, themeColor);
+      const root = document.documentElement;
+      root.style.setProperty('--color-primary-50',  palette[50]);
+      root.style.setProperty('--color-primary-100', palette[100]);
+      root.style.setProperty('--color-primary-500', palette[500]);
+      root.style.setProperty('--color-primary-600', palette[600]);
+      root.style.setProperty('--color-primary-700', palette[700]);
+    }
+  } catch (_) {}
 }
 
 // Default palette (used in index.css :root vars as baseline)
