@@ -15,7 +15,8 @@
       "Bash(npx prisma *)",
       "Bash(npm list *)",
       "Bash(grep -c \"verify-student/\\\\${studentId}\" \"/Users/nimadorjimoktan/Documents/Claude/Projects/SMART ECCD/client/src/pages/auth/Register.jsx\")",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(npm run *)"
     ]
   }
 }
