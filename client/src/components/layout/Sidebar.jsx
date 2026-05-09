@@ -1,6 +1,7 @@
 // SMART ECCD – Role-Based Sidebar Navigation
 
-import { NavLink } from 'react-router-dom';
+import { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { classNames } from '../../utils/helpers';
 import useAuthStore from '../../store/authStore';
 
@@ -32,6 +33,7 @@ const ICONS = {
   staff:        'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
   bell:         'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9',
   print:        'M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z',
+  switchRole:   'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4',
 };
 
 const NAV_ITEMS = {
@@ -75,7 +77,27 @@ const COMMON_ITEMS = [
 
 const Sidebar = () => {
   const { user } = useAuthStore();
-  const navItems = NAV_ITEMS[user?.role] || [];
+  const navigate  = useNavigate();
+  const isManager = user?.role === 'CENTER_MANAGER';
+
+  const [teacherMode, setTeacherMode] = useState(
+    () => isManager && localStorage.getItem('teacherMode') === 'true'
+  );
+
+  const toggleTeacherMode = () => {
+    const next = !teacherMode;
+    setTeacherMode(next);
+    localStorage.setItem('teacherMode', String(next));
+    navigate(next ? '/teacher/dashboard' : '/manager/dashboard');
+  };
+
+  const navItems = (isManager && teacherMode)
+    ? NAV_ITEMS.TEACHER
+    : (NAV_ITEMS[user?.role] || []);
+
+  const roleLabel = isManager && teacherMode
+    ? 'Teacher (Manager)'
+    : user?.role?.replace(/_/g, ' ').toLowerCase();
 
   return (
     <aside className="w-64 min-h-screen bg-white border-r border-gray-100 flex flex-col">
@@ -117,6 +139,26 @@ const Sidebar = () => {
         ))}
       </nav>
 
+      {/* Teacher mode toggle (CENTER_MANAGER only) */}
+      {isManager && (
+        <div className="px-3 pb-3">
+          <button
+            onClick={toggleTeacherMode}
+            className={classNames(
+              'w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+              teacherMode
+                ? 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200'
+                : 'bg-primary-50 text-primary-700 hover:bg-primary-100 border border-primary-100'
+            )}
+          >
+            <Icon path={ICONS.switchRole} className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">
+              {teacherMode ? 'Back to Manager View' : 'Switch to Teacher View'}
+            </span>
+          </button>
+        </div>
+      )}
+
       {/* User Info */}
       {user && (
         <div className="p-4 border-t border-gray-100">
@@ -126,7 +168,7 @@ const Sidebar = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
-              <p className="text-xs text-gray-500 capitalize">{user.role?.replace(/_/g, ' ').toLowerCase()}</p>
+              <p className="text-xs text-gray-500 capitalize">{roleLabel}</p>
             </div>
           </div>
         </div>

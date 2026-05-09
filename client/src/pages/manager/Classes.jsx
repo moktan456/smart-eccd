@@ -31,8 +31,14 @@ const MgrClasses = () => {
   useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
-    userService.list({ role: 'TEACHER', limit: 100 })
-      .then(({ data }) => setTeachers(data.data));
+    Promise.all([
+      userService.list({ role: 'TEACHER', limit: 100 }),
+      userService.list({ role: 'CENTER_MANAGER', limit: 100 }),
+    ]).then(([{ data: tData }, { data: mData }]) => {
+      const teacherUsers  = tData.data.map(t => ({ ...t, _label: t.name }));
+      const managerUsers  = mData.data.map(m => ({ ...m, _label: `${m.name} (Manager)` }));
+      setTeachers([...teacherUsers, ...managerUsers]);
+    });
     api.get('/classrooms')
       .then(({ data }) => setClassrooms(data.data))
       .catch(() => {});
@@ -40,7 +46,7 @@ const MgrClasses = () => {
 
   const teacherOptions = [
     { value: '', label: '— Select Teacher —' },
-    ...teachers.map(t => ({ value: t.id, label: t.name })),
+    ...teachers.map(t => ({ value: t.id, label: t._label || t.name })),
   ];
 
   const classroomOptions = [
@@ -175,7 +181,7 @@ const MgrClasses = () => {
             required
           />
           {teachers.length === 0 && (
-            <p className="text-xs text-amber-600">No teachers found. Create teacher accounts first.</p>
+            <p className="text-xs text-amber-600">No teachers or managers found. Create staff accounts first.</p>
           )}
           <Select
             label="Assign Classroom (optional)"

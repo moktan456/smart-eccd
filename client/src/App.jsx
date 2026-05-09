@@ -108,13 +108,13 @@ const App = () => (
             <Route path="/manager/notifications"          element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrNotifications /></ProtectedRoute>} />
 
             {/* Teacher */}
-            <Route path="/teacher/dashboard"              element={<ProtectedRoute roles={['TEACHER']}><TeacherDashboard /></ProtectedRoute>} />
-            <Route path="/teacher/activities"             element={<ProtectedRoute roles={['TEACHER']}><TeacherActivities /></ProtectedRoute>} />
-            <Route path="/teacher/activities/new"         element={<ProtectedRoute roles={['TEACHER']}><TeacherActivityNew /></ProtectedRoute>} />
-            <Route path="/teacher/activities/:id/assign"  element={<ProtectedRoute roles={['TEACHER']}><TeacherActivityAssign /></ProtectedRoute>} />
-            <Route path="/teacher/activities/:id/conduct" element={<ProtectedRoute roles={['TEACHER']}><TeacherConduct /></ProtectedRoute>} />
-            <Route path="/teacher/children"               element={<ProtectedRoute roles={['TEACHER']}><TeacherChildren /></ProtectedRoute>} />
-            <Route path="/teacher/attendance"             element={<ProtectedRoute roles={['TEACHER']}><TeacherAttendance /></ProtectedRoute>} />
+            <Route path="/teacher/dashboard"              element={<ProtectedRoute roles={['TEACHER', 'CENTER_MANAGER']}><TeacherDashboard /></ProtectedRoute>} />
+            <Route path="/teacher/activities"             element={<ProtectedRoute roles={['TEACHER', 'CENTER_MANAGER']}><TeacherActivities /></ProtectedRoute>} />
+            <Route path="/teacher/activities/new"         element={<ProtectedRoute roles={['TEACHER', 'CENTER_MANAGER']}><TeacherActivityNew /></ProtectedRoute>} />
+            <Route path="/teacher/activities/:id/assign"  element={<ProtectedRoute roles={['TEACHER', 'CENTER_MANAGER']}><TeacherActivityAssign /></ProtectedRoute>} />
+            <Route path="/teacher/activities/:id/conduct" element={<ProtectedRoute roles={['TEACHER', 'CENTER_MANAGER']}><TeacherConduct /></ProtectedRoute>} />
+            <Route path="/teacher/children"               element={<ProtectedRoute roles={['TEACHER', 'CENTER_MANAGER']}><TeacherChildren /></ProtectedRoute>} />
+            <Route path="/teacher/attendance"             element={<ProtectedRoute roles={['TEACHER', 'CENTER_MANAGER']}><TeacherAttendance /></ProtectedRoute>} />
 
             {/* Parent */}
             <Route path="/parent/dashboard"                     element={<ProtectedRoute roles={['PARENT']}><ParentDashboard /></ProtectedRoute>} />
