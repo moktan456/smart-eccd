@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
-import { userService } from '../../services/user.service';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Table from '../../components/common/Table';
@@ -15,13 +14,11 @@ const EMPTY_FORM = {
   dateOfBirth: '',
   classId: '',
   medicalNotes: '',
-  parentIds: [],
 };
 
 const MgrChildren = () => {
   const [children, setChildren] = useState([]);
   const [classes, setClasses] = useState([]);
-  const [parents, setParents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState('');
@@ -32,6 +29,12 @@ const MgrChildren = () => {
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [newStudentId, setNewStudentId] = useState(null); // shown after successful enrolment
+
+  const [linkChild, setLinkChild]     = useState(null);  // child being linked
+  const [allParents, setAllParents]   = useState([]);
+  const [checkedParentIds, setCheckedParentIds] = useState([]);
+  const [linkSaving, setLinkSaving]   = useState(false);
+  const [linkError, setLinkError]     = useState('');
 
   const load = useCallback(() => {
     setLoading(true);
@@ -47,7 +50,6 @@ const MgrChildren = () => {
 
   useEffect(() => {
     api.get('/classes?limit=100').then(({ data }) => setClasses(data.data));
-    userService.list({ role: 'PARENT', limit: 100 }).then(({ data }) => setParents(data.data));
   }, []);
 
   const classOptions = [
@@ -75,19 +77,47 @@ const MgrChildren = () => {
       dateOfBirth: child.dateOfBirth ? child.dateOfBirth.slice(0, 10) : '',
       classId: child.class?.id || '',
       medicalNotes: '',
-      parentIds: child.parents?.map(p => p.parent.id) || [],
     });
     setError('');
     setShowModal(true);
   };
 
-  const toggleParent = (parentId) => {
-    setForm(f => ({
-      ...f,
-      parentIds: f.parentIds.includes(parentId)
-        ? f.parentIds.filter(id => id !== parentId)
-        : [...f.parentIds, parentId],
-    }));
+  const openLink = async (child) => {
+    setLinkChild(child);
+    setLinkError('');
+    setLinkSaving(false);
+    try {
+      const { data } = await api.get('/users', { params: { role: 'PARENT', limit: 100 } });
+      setAllParents(data.data);
+      const preChecked = child.parents?.map(p => p.parent.id) || [];
+      setCheckedParentIds(preChecked);
+    } catch {
+      setAllParents([]);
+      setCheckedParentIds([]);
+    }
+  };
+
+  const toggleParentCheck = (parentId) => {
+    setCheckedParentIds(prev =>
+      prev.includes(parentId)
+        ? prev.filter(id => id !== parentId)
+        : [...prev, parentId]
+    );
+  };
+
+  const handleLinkSave = async () => {
+    if (!linkChild) return;
+    setLinkSaving(true);
+    setLinkError('');
+    try {
+      await api.put(`/children/${linkChild.id}/parents`, { parentIds: checkedParentIds });
+      setLinkChild(null);
+      load();
+    } catch (err) {
+      setLinkError(err.response?.data?.message || 'Failed to update parent links.');
+    } finally {
+      setLinkSaving(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -100,7 +130,6 @@ const MgrChildren = () => {
         lastName: form.lastName,
         dateOfBirth: form.dateOfBirth,
         classId: form.classId,
-        parentIds: form.parentIds,
       };
       if (form.medicalNotes) payload.medicalNotes = form.medicalNotes;
 
@@ -162,6 +191,7 @@ const MgrChildren = () => {
         <div className="flex gap-2 justify-end">
           <Button size="sm" variant="secondary" onClick={() => openEdit(r)}>Edit</Button>
           <Button size="sm" variant="danger" onClick={() => setConfirmDelete(r)}>Archive</Button>
+          <Button size="sm" variant="secondary" onClick={() => openLink(r)}>Link Parents</Button>
         </div>
       ),
     },
@@ -285,25 +315,6 @@ const MgrChildren = () => {
             />
           </div>
 
-          {parents.length > 0 && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Link Parent Account(s)</label>
-              <div className="max-h-40 overflow-y-auto space-y-1 border border-gray-200 rounded-lg p-2">
-                {parents.map(p => (
-                  <label key={p.id} className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-50 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.parentIds.includes(p.id)}
-                      onChange={() => toggleParent(p.id)}
-                      className="rounded border-gray-300 text-primary-600"
-                    />
-                    <span className="text-sm text-gray-900">{p.name}</span>
-                    <span className="text-xs text-gray-500">{p.email}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
         </form>
       </Modal>
 
@@ -323,6 +334,43 @@ const MgrChildren = () => {
           Archive <strong>{confirmDelete?.firstName} {confirmDelete?.lastName}</strong>? All their activity
           and attendance records are preserved. This can be undone by an admin.
         </p>
+      </Modal>
+
+      {/* Link Parents Modal */}
+      <Modal
+        isOpen={!!linkChild}
+        onClose={() => setLinkChild(null)}
+        title={`Link Parents – ${linkChild?.firstName} ${linkChild?.lastName}`}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setLinkChild(null)}>Cancel</Button>
+            <Button loading={linkSaving} onClick={handleLinkSave}>Save</Button>
+          </>
+        }
+      >
+        {linkError && (
+          <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            {linkError}
+          </div>
+        )}
+        {allParents.length === 0 ? (
+          <p className="text-sm text-gray-500">No parent accounts exist yet. Add parents first from the Parents page.</p>
+        ) : (
+          <div className="max-h-52 overflow-y-auto space-y-0.5 border border-gray-200 rounded-lg p-2">
+            {allParents.map(parent => (
+              <label key={parent.id} className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={checkedParentIds.includes(parent.id)}
+                  onChange={() => toggleParentCheck(parent.id)}
+                  className="rounded border-gray-300 text-primary-600"
+                />
+                <span className="text-sm text-gray-900">{parent.name}</span>
+                <span className="text-xs text-gray-500">{parent.email}</span>
+              </label>
+            ))}
+          </div>
+        )}
       </Modal>
     </div>
   );
