@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { centerService } from '../../services/center.service';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
@@ -41,6 +41,27 @@ const ThemePreview = ({ palette, name }) => (
   </div>
 );
 
+// Crop the source image to a centered square then scale to `size`×`size` px.
+// Returns a base64 JPEG data-URL.
+const cropAndResize = (file, size = 128) =>
+  new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img  = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const side = Math.min(img.width, img.height);
+      const sx   = (img.width  - side) / 2;
+      const sy   = (img.height - side) / 2;
+      const canvas = document.createElement('canvas');
+      canvas.width  = size;
+      canvas.height = size;
+      canvas.getContext('2d').drawImage(img, sx, sy, side, side, 0, 0, size, size);
+      resolve(canvas.toDataURL('image/jpeg', 0.88));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+
 const CenterSettings = () => {
   const [centers, setCenters]       = useState([]);
   const [selectedId, setSelectedId] = useState('');
@@ -49,6 +70,21 @@ const CenterSettings = () => {
   const [saving, setSaving]         = useState(false);
   const [success, setSuccess]       = useState('');
   const [error, setError]           = useState('');
+  const [logoUploading, setLogoUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleLogoFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoUploading(true);
+    try {
+      const dataUrl = await cropAndResize(file, 128);
+      setForm(f => ({ ...f, logo: dataUrl }));
+    } finally {
+      setLogoUploading(false);
+      e.target.value = '';
+    }
+  };
 
   // Selected theme object (for live preview while picking)
   const activeTheme = THEMES.find(t => t.value === form.theme);
@@ -151,7 +187,9 @@ const CenterSettings = () => {
 
         {/* Logo */}
         <Card title="Center Logo">
-          <p className="text-xs text-gray-500 mb-4">Displayed in the sidebar and on printed reports. Recommended: square image, at least 128×128 px.</p>
+          <p className="text-xs text-gray-500 mb-4">
+            Displayed in the sidebar and on printed reports. Upload a file or paste a URL — images are automatically cropped to a 128×128 px square.
+          </p>
           <div className="flex items-start gap-5">
             {/* Preview */}
             <div className="flex-shrink-0">
@@ -171,20 +209,46 @@ const CenterSettings = () => {
                 </div>
               )}
             </div>
-            {/* Input */}
-            <div className="flex-1 space-y-2">
+
+            {/* Inputs */}
+            <div className="flex-1 space-y-3">
+              {/* File upload */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleLogoFile}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={logoUploading}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-sm font-medium text-gray-700 transition-colors disabled:opacity-50"
+              >
+                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                {logoUploading ? 'Processing…' : 'Upload Image'}
+              </button>
+
+              {/* URL fallback */}
               <Input
-                label="Logo URL"
-                value={form.logo}
+                label="Or paste a logo URL"
+                value={form.logo.startsWith('data:') ? '' : form.logo}
                 onChange={e => setForm(f => ({ ...f, logo: e.target.value }))}
                 placeholder="https://example.com/logo.png"
               />
-              <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
-                <svg className="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                <p className="text-xs text-amber-700">Direct file upload coming soon — paste an image URL for now.</p>
-              </div>
+
+              {form.logo && (
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, logo: '' }))}
+                  className="text-xs text-red-500 hover:text-red-700"
+                >
+                  Remove logo
+                </button>
+              )}
             </div>
           </div>
         </Card>
