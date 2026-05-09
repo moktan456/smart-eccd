@@ -44,7 +44,12 @@ const listUsers = async (req, res, next) => {
     const [users, total] = await Promise.all([
       prisma.user.findMany({
         where,
-        select: { id: true, name: true, email: true, role: true, centerId: true, avatar: true, isActive: true, createdAt: true },
+        select: {
+          id: true, name: true, email: true, phone: true, role: true,
+          centerId: true, avatar: true, isActive: true, createdAt: true,
+          childParents: { select: { child: { select: { id: true, firstName: true, lastName: true } } } },
+          teacherClasses: { select: { id: true, name: true } },
+        },
         orderBy: { createdAt: 'desc' },
         ...paginate(page, limit),
       }),

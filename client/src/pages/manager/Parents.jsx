@@ -175,7 +175,7 @@ const MgrParents = () => {
     {
       key: 'children', label: 'Linked Children',
       render: r => {
-        const linked = r.children?.map(c => `${c.firstName} ${c.lastName}`).join(', ');
+        const linked = r.childParents?.map(cp => `${cp.child.firstName} ${cp.child.lastName}`).join(', ');
         return linked
           ? <span className="text-sm">{linked}</span>
           : <span className="text-gray-400 text-sm">— None linked —</span>;

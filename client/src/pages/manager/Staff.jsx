@@ -94,8 +94,8 @@ const MgrStaff = () => {
     { key: 'role', label: 'Role', render: r => <Badge color={ROLE_COLOR[r.role] || 'gray'}>{r.role.replace('_', ' ')}</Badge> },
     {
       key: 'class', label: 'Assigned Class',
-      render: r => r.teachingClass
-        ? <span className="text-sm">{r.teachingClass.name}</span>
+      render: r => r.teacherClasses?.[0]
+        ? <span className="text-sm">{r.teacherClasses[0].name}</span>
         : <span className="text-gray-400 text-sm">Not assigned</span>,
     },
     {
