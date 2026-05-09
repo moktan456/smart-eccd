@@ -1,5 +1,7 @@
 # SMART ECCD – User Guide
 
+> Developed by **[Nima Dorji Moktan](https://superlative-youtiao-15895a.netlify.app/#hero)**
+
 This guide walks through how each role uses the system, in the order that makes sense for day-to-day operations.
 
 ---

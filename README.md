@@ -1,5 +1,7 @@
 # SMART ECCD v1.0
 
+> Developed by **[Nima Dorji Moktan](https://superlative-youtiao-15895a.netlify.app/#hero)**
+
 ### Smart Management and Assessment Resource Tool for Early Childhood Care and Development
 
 A full-stack web application for managing ECCD centers, tracking student learning using Bloom's Taxonomy, handling attendance, fees, leave, and communication between managers, teachers, and parents.
