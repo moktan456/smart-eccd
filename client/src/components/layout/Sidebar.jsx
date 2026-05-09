@@ -85,7 +85,7 @@ const Sidebar = () => {
         </div>
         <div>
           <span className="font-bold text-gray-900 text-sm">SMART ECCD</span>
-          <span className="ml-1 text-xs font-semibold text-primary-600 bg-primary-50 px-1.5 py-0.5 rounded-full">v2.0</span>
+          <span className="ml-1 text-xs font-semibold text-primary-600 bg-primary-50 px-1.5 py-0.5 rounded-full">v1.0</span>
         </div>
       </div>
 

@@ -43,3 +43,6 @@ coverage/
 *.pem
 .yarn/cache
 .yarn/unplugged
+
+# Claude Code
+CLAUDE.md
