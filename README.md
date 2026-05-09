@@ -1,4 +1,4 @@
-# SMART ECCD v2.0
+# SMART ECCD v1.0
 
 ### Smart Management and Assessment Resource Tool for Early Childhood Care and Development
 
@@ -22,6 +22,7 @@ A full-stack web application for managing ECCD centers, tracking student learnin
 12. [Role Overview](#role-overview)
 13. [Common Issues & Fixes](#common-issues--fixes)
 14. [Free Cloud Deployment: Render + Vercel + Neon](#free-cloud-deployment-render--vercel--neon)
+15. [User Guide](USER_GUIDE.md)
 
 ---
 
@@ -135,7 +136,6 @@ sudo git clone https://github.com/moktan456/smart-eccd.git
 sudo chown -R $USER:$USER smart-eccd
 cd smart-eccd
 ```
-
 
 ### 2. Install Backend Dependencies
 
@@ -533,6 +533,10 @@ After seeding the database, use these credentials to log in:
 
 Parents can self-register at `/register` using their child's **Student ID** (format: `STU-YYYY-NNNN`). The Student ID is assigned when the Center Manager enrolls a child and is visible in the Children management page.
 
+### Usage Workflow
+
+For a step-by-step guide on how each role uses the system — from initial center setup through day-to-day operations — see the **[User Guide](USER_GUIDE.md)**.
+
 ---
 
 ## API Overview
@@ -665,11 +669,11 @@ _SMART ECCD v2.0 — Built with Node.js, React, PostgreSQL & Prisma_
 
 Deploy SMART ECCD for free using:
 
-| Service | What it hosts | Free tier |
-|---------|--------------|-----------|
-| [Neon](https://neon.tech) | PostgreSQL database | 0.5 GB, always on |
-| [Render](https://render.com) | Node.js backend API | 750 hrs/month |
-| [Vercel](https://vercel.com) | React frontend | Unlimited, always free |
+| Service                      | What it hosts       | Free tier              |
+| ---------------------------- | ------------------- | ---------------------- |
+| [Neon](https://neon.tech)    | PostgreSQL database | 0.5 GB, always on      |
+| [Render](https://render.com) | Node.js backend API | 750 hrs/month          |
+| [Vercel](https://vercel.com) | React frontend      | Unlimited, always free |
 
 > **Render free tier note:** The free web service sleeps after 15 minutes of inactivity and takes ~30–50 seconds to wake on the first request. This is expected behavior on the free plan.
 
@@ -717,27 +721,29 @@ Deploy SMART ECCD for free using:
    - **Instance Type:** `Free`
 
 5. If Render auto-detected `render.yaml`, open the service after creation, go to **Settings → Build & Deploy** and update the **Build Command** to:
+
    ```
    npm install && npx prisma generate && npx prisma migrate deploy
    ```
+
    This ensures the database schema is applied on every deploy.
 
 6. Go to the **Environment** tab and add the following environment variables:
 
-   | Key | Value |
-   |-----|-------|
-   | `NODE_ENV` | `production` |
-   | `DATABASE_URL` | *(paste your full Neon connection string from Step 1)* |
-   | `JWT_SECRET` | *(click "Generate" for a random value)* |
-   | `JWT_REFRESH_SECRET` | *(click "Generate" for a random value)* |
-   | `JWT_EXPIRES_IN` | `15m` |
-   | `JWT_REFRESH_EXPIRES_IN` | `7d` |
-   | `CLIENT_URL` | *(leave blank for now — fill in after Step 3)* |
-   | `UPLOAD_PROVIDER` | `local` |
-   | `ENABLE_REAL_TIME` | `true` |
-   | `ENABLE_EMAIL_NOTIFICATIONS` | `false` |
-   | `ENABLE_PDF_REPORTS` | `false` |
-   | `PUPPETEER_SKIP_DOWNLOAD` | `true` |
+   | Key                          | Value                                                  |
+   | ---------------------------- | ------------------------------------------------------ |
+   | `NODE_ENV`                   | `production`                                           |
+   | `DATABASE_URL`               | _(paste your full Neon connection string from Step 1)_ |
+   | `JWT_SECRET`                 | _(click "Generate" for a random value)_                |
+   | `JWT_REFRESH_SECRET`         | _(click "Generate" for a random value)_                |
+   | `JWT_EXPIRES_IN`             | `15m`                                                  |
+   | `JWT_REFRESH_EXPIRES_IN`     | `7d`                                                   |
+   | `CLIENT_URL`                 | _(leave blank for now — fill in after Step 3)_         |
+   | `UPLOAD_PROVIDER`            | `local`                                                |
+   | `ENABLE_REAL_TIME`           | `true`                                                 |
+   | `ENABLE_EMAIL_NOTIFICATIONS` | `false`                                                |
+   | `ENABLE_PDF_REPORTS`         | `false`                                                |
+   | `PUPPETEER_SKIP_DOWNLOAD`    | `true`                                                 |
 
 7. Click **Save Changes**, then click **Manual Deploy → Deploy latest commit**
 8. Watch the build logs — the deploy is successful when you see `Server running on port ...`
@@ -760,9 +766,9 @@ Deploy SMART ECCD for free using:
    - **Output Directory:** `dist`
 5. Expand **Environment Variables** and add:
 
-   | Key | Value |
-   |-----|-------|
-   | `VITE_API_URL` | *(your Render backend URL from Step 2, e.g. `https://smart-eccd-api.onrender.com`)* |
+   | Key            | Value                                                                               |
+   | -------------- | ----------------------------------------------------------------------------------- |
+   | `VITE_API_URL` | _(your Render backend URL from Step 2, e.g. `https://smart-eccd-api.onrender.com`)_ |
 
    > Do **not** add `/api` at the end — the app appends it automatically.
 
@@ -790,22 +796,27 @@ Now that you have the Vercel URL, go back to Render and update the missing envir
 Run the seed from your **local machine** while pointing directly at the Neon database. This works on the free Render tier without needing shell access.
 
 1. Open a terminal on your local machine and navigate to the `server` folder:
+
    ```bash
    cd "path/to/SMART ECCD/server"
    ```
 
 2. Create or open `server/.env` and temporarily set `DATABASE_URL` to your Neon connection string:
+
    ```env
    DATABASE_URL="postgresql://smart_eccd_owner:XXXXXXXXXXXX@ep-xxx-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require"
    ```
+
    Replace the value with your actual Neon connection string from Step 1.
 
 3. Generate the Prisma client locally (required before seeding):
+
    ```bash
    npx prisma generate
    ```
 
 4. Run the seed:
+
    ```bash
    node prisma/seed.js
    ```
@@ -857,6 +868,7 @@ This is normal for Render's free tier — the service spins down after 15 minute
 #### Render build fails with "prisma: command not found"
 
 Update the Render build command to use `npx`:
+
 ```
 npm install && npx prisma generate && npx prisma migrate deploy
 ```
