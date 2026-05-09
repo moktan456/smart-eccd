@@ -179,4 +179,29 @@ const deleteChild = async (req, res, next) => {
   }
 };
 
-module.exports = { listChildren, getChildById, createChild, updateChild, deleteChild };
+/**
+ * PUT /api/children/:id/parents – CM | SA
+ * Explicitly link/unlink parents to a child
+ */
+const linkParents = async (req, res, next) => {
+  try {
+    const parentIdsSchema = z.object({ parentIds: z.array(z.string()).default([]) });
+    const { parentIds } = parentIdsSchema.parse(req.body);
+
+    // Delete all existing links
+    await prisma.childParent.deleteMany({ where: { childId: req.params.id } });
+
+    // Create new links if any
+    if (parentIds.length) {
+      await prisma.childParent.createMany({
+        data: parentIds.map((pid) => ({ childId: req.params.id, parentId: pid })),
+      });
+    }
+
+    res.json({ success: true, data: { childId: req.params.id, parentIds } });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { listChildren, getChildById, createChild, updateChild, deleteChild, linkParents };
