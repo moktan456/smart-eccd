@@ -9,6 +9,7 @@ import { CURRENCIES, saveCenterCurrency } from '../../utils/currency';
 
 const EMPTY_FORM = {
   name: '', address: '', phone: '', email: '', website: '',
+  logo: '',
   theme: 'sneat', themeColor: '#696CFF',
   currency: 'USD',
   latitude: '', longitude: '',
@@ -73,6 +74,7 @@ const CenterSettings = () => {
         phone:      c.phone      || '',
         email:      c.email      || '',
         website:    c.website    || '',
+        logo:       c.logo       || '',
         theme:      c.theme      || 'sneat',
         themeColor: c.themeColor || '#696CFF',
         currency:   c.currency   || 'USD',
@@ -144,6 +146,46 @@ const CenterSettings = () => {
               <Input label="Email"        type="email" value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} />
             </div>
             <Input label="Website (optional)" value={form.website} onChange={e => setForm(f=>({...f,website:e.target.value}))} placeholder="https://…" />
+          </div>
+        </Card>
+
+        {/* Logo */}
+        <Card title="Center Logo">
+          <p className="text-xs text-gray-500 mb-4">Displayed in the sidebar and on printed reports. Recommended: square image, at least 128×128 px.</p>
+          <div className="flex items-start gap-5">
+            {/* Preview */}
+            <div className="flex-shrink-0">
+              {form.logo ? (
+                <img
+                  src={form.logo}
+                  alt="Center logo"
+                  className="w-20 h-20 rounded-xl object-cover border border-gray-200 shadow-sm"
+                  onError={e => { e.currentTarget.style.display = 'none'; }}
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center gap-1 text-gray-400">
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-[10px] font-medium">No logo</span>
+                </div>
+              )}
+            </div>
+            {/* Input */}
+            <div className="flex-1 space-y-2">
+              <Input
+                label="Logo URL"
+                value={form.logo}
+                onChange={e => setForm(f => ({ ...f, logo: e.target.value }))}
+                placeholder="https://example.com/logo.png"
+              />
+              <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+                <svg className="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p className="text-xs text-amber-700">Direct file upload coming soon — paste an image URL for now.</p>
+              </div>
+            </div>
           </div>
         </Card>
 
@@ -259,10 +301,14 @@ const CenterSettings = () => {
             className="mt-4 p-4 rounded-xl flex items-center gap-4 transition-all duration-300"
             style={{ backgroundColor: form.themeColor + '18', borderLeft: `4px solid ${form.themeColor}` }}
           >
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-sm flex-shrink-0"
-              style={{ backgroundColor: form.themeColor }}>
-              SE
-            </div>
+            {form.logo ? (
+              <img src={form.logo} alt="logo" className="w-9 h-9 rounded-lg object-cover shadow-sm flex-shrink-0 border border-white/20" />
+            ) : (
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-sm flex-shrink-0"
+                style={{ backgroundColor: form.themeColor }}>
+                SE
+              </div>
+            )}
             <div>
               <p className="text-sm font-semibold" style={{ color: form.themeColor }}>
                 {form.name || 'Your Center Name'}
