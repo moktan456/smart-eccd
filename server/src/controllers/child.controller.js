@@ -188,6 +188,26 @@ const linkParents = async (req, res, next) => {
     const parentIdsSchema = z.object({ parentIds: z.array(z.string()).default([]) });
     const { parentIds } = parentIdsSchema.parse(req.body);
 
+    // Verify child belongs to manager's center
+    const child = await prisma.child.findUnique({
+      where: { id: req.params.id },
+      select: { centerId: true },
+    });
+    if (!child) return res.status(404).json({ success: false, message: 'Child not found.' });
+    if (req.user.role === 'CENTER_MANAGER' && child.centerId !== req.user.centerId) {
+      return res.status(403).json({ success: false, message: 'Access denied.' });
+    }
+
+    // Validate all parentIds are PARENT-role users in the same center
+    if (parentIds.length) {
+      const validCount = await prisma.user.count({
+        where: { id: { in: parentIds }, role: 'PARENT', centerId: child.centerId },
+      });
+      if (validCount !== parentIds.length) {
+        return res.status(400).json({ success: false, message: 'One or more parent IDs are invalid.' });
+      }
+    }
+
     // Delete all existing links
     await prisma.childParent.deleteMany({ where: { childId: req.params.id } });
 

@@ -79,9 +79,14 @@ const MgrParents = () => {
   // ── Remove ─────────────────────────────────────────────────────────────────
 
   const handleRemove = async (p) => {
-    await api.delete(`/users/${p.id}`);
-    setConfirmDelete(null);
-    load();
+    try {
+      await api.delete(`/users/${p.id}`);
+      setConfirmDelete(null);
+      load();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to remove account.');
+      setConfirmDelete(null);
+    }
   };
 
   // ── Link Children ──────────────────────────────────────────────────────────
@@ -125,17 +130,14 @@ const MgrParents = () => {
       const toLink   = checkedIds.filter(id => !originalLinkedChildIds.includes(id));
       const toUnlink = originalLinkedChildIds.filter(id => !checkedIds.includes(id));
 
-      for (const childId of [...toLink, ...toUnlink]) {
+      await Promise.all([...toLink, ...toUnlink].map(async (childId) => {
         const child = allChildren.find(c => c.id === childId);
         const currentParentIds = child.parents?.map(p => p.parent.id) || [];
-        let updatedParentIds;
-        if (toLink.includes(childId)) {
-          updatedParentIds = [...currentParentIds, linkParent.id];
-        } else {
-          updatedParentIds = currentParentIds.filter(pid => pid !== linkParent.id);
-        }
+        const updatedParentIds = toLink.includes(childId)
+          ? [...currentParentIds, linkParent.id]
+          : currentParentIds.filter(pid => pid !== linkParent.id);
         await api.put(`/children/${childId}/parents`, { parentIds: updatedParentIds });
-      }
+      }));
 
       setLinkParent(null);
       load();

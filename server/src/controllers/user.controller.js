@@ -15,6 +15,8 @@ const createUserSchema = z.object({
 
 const updateUserSchema = z.object({
   name: z.string().min(2).optional(),
+  email: z.string().email().optional(),
+  phone: z.string().optional().nullable(),
   avatar: z.string().url().optional().nullable(),
   password: z.string().min(8).optional(),
 });
@@ -114,7 +116,7 @@ const createUser = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
   try {
     const data = updateUserSchema.parse(req.body);
-    const updates = { name: data.name, avatar: data.avatar };
+    const updates = { name: data.name, email: data.email, phone: data.phone, avatar: data.avatar };
     if (data.password) updates.passwordHash = await bcrypt.hash(data.password, 12);
 
     const user = await prisma.user.update({
