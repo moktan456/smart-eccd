@@ -14,7 +14,8 @@
       "Bash(node -e \"require\\('@mui/x-charts'\\)\")",
       "Bash(npx prisma *)",
       "Bash(npm list *)",
-      "Bash(grep -c \"verify-student/\\\\${studentId}\" \"/Users/nimadorjimoktan/Documents/Claude/Projects/SMART ECCD/client/src/pages/auth/Register.jsx\")"
+      "Bash(grep -c \"verify-student/\\\\${studentId}\" \"/Users/nimadorjimoktan/Documents/Claude/Projects/SMART ECCD/client/src/pages/auth/Register.jsx\")",
+      "Bash(git push *)"
     ]
   }
 }
