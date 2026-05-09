@@ -28,6 +28,7 @@ const MgrCalendar       = lazy(() => import('./pages/manager/Calendar'));
 const MgrFees           = lazy(() => import('./pages/manager/FeeManagement'));
 const MgrLeaveReview    = lazy(() => import('./pages/manager/LeaveReview'));
 const MgrStaff          = lazy(() => import('./pages/manager/Staff'));
+const MgrParents        = lazy(() => import('./pages/manager/Parents'));
 const MgrNotifications  = lazy(() => import('./pages/manager/Notifications'));
 
 // Teacher
@@ -103,6 +104,7 @@ const App = () => (
             <Route path="/manager/fees"                   element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrFees /></ProtectedRoute>} />
             <Route path="/manager/leave"                  element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrLeaveReview /></ProtectedRoute>} />
             <Route path="/manager/staff"                  element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrStaff /></ProtectedRoute>} />
+            <Route path="/manager/parents"                element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrParents /></ProtectedRoute>} />
             <Route path="/manager/notifications"          element={<ProtectedRoute roles={['CENTER_MANAGER']}><MgrNotifications /></ProtectedRoute>} />
 
             {/* Teacher */}
